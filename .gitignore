@@ -1,0 +1,11 @@
+venv/*
+env/*
+.pytest_cache/*
+scripts/*
+*.idea/
+*__pycache__*
+.mypy_cache/*
+htmlcov/
+*.DS_STORE
+.coverage
+
