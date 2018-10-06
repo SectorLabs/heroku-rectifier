@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Dict
 
 import structlog
 
@@ -9,7 +10,9 @@ LOGGER = structlog.get_logger(__name__)
 
 
 class Balancer:
-    def __init__(self, config: BalancerConfig):
+    queues_update_time: Dict[str, datetime]
+
+    def __init__(self, config: BalancerConfig) -> None:
         self.config = config
 
         self.queues_update_time = dict()

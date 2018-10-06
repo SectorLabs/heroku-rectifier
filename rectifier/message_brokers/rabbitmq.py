@@ -21,7 +21,7 @@ class BrokerError(RuntimeError):
 
 
 class RabbitMQ(Broker):
-    def __init__(self, config: RabbitMQConfig):
+    def __init__(self, config: RabbitMQConfig) -> None:
         self.config = config
 
     def stats(self):
@@ -79,7 +79,7 @@ class RabbitMQ(Broker):
         queues = []
 
         for queue_name in queue_names:
-            queue_list = list(filter(lambda queue_stats: queue_stats.get('name') == queue_name, stats))
+            queue_list = list(filter(lambda queue_stats: queue_stats['name'] == queue_name, stats))
 
             if len(queue_list) != 1:
                 message = 'Could not find such a queue name'

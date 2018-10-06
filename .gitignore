@@ -3,3 +3,4 @@ venv/*
 scripts/*
 *.idea/
 *__pycache__*
+.mypy_cache/*

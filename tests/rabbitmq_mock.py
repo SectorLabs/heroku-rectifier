@@ -10,6 +10,7 @@ from werkzeug.serving import make_server
 
 class RabbitMQAPIMockVHost(object):
     """Mocked data that the mock returns."""
+    _queues: Dict[str, Dict]
 
     def __init__(self) -> None:
         self._queues = {}
@@ -80,6 +81,7 @@ class RabbitMQAPIMock:
     This starts a HTTP server that replies
     exactly like the RabbitMQ management
     API would."""
+    vhosts: Dict
 
     def __init__(self) -> None:
         """Initializes a new instance of :see:RabbitMQAPIMock."""

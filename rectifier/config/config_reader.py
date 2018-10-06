@@ -56,21 +56,21 @@ class ConfigReader:
     @classmethod
     def rabbitmq_config_from_dict(cls, data: Dict) -> RabbitMQConfig:
         return RabbitMQConfig(
-            host=data.get('host'),
-            port=data.get('port'),
-            user=data.get('user'),
-            password=data.get('password'),
-            secure=data.get('secure'),
-            vhost=data.get('vhost'),
+            host=data['host'],
+            port=data['port'],
+            user=data['user'],
+            password=data['password'],
+            secure=data['secure'],
+            vhost=data['vhost'],
         )
 
     @classmethod
     def balancer_config_from_dict(cls, data: Dict) -> BalancerConfig:
         queues = dict()
         for (queue_name, queue_properties) in data.items():
-            intervals = queue_properties.get('intervals')
-            workers = queue_properties.get('workers')
-            cooldown = queue_properties.get('cooldown')
+            intervals = queue_properties['intervals']
+            workers = queue_properties['workers']
+            cooldown = queue_properties['cooldown']
 
             if len(intervals) != len(workers):
                 message = 'The length of the intervals array should match the length of the workers array.'

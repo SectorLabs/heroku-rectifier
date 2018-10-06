@@ -18,17 +18,10 @@ class RabbitMQConfig:
 class QueueConfig:
     """Configuration for a single Queue"""
 
-    # Make sure they're ordered and starting with 0.
-    # Programatically test this.
     intervals: List[int]
-
-    # Make sure these have the same count.
-    # And they're ordered.
     workers: List[int]
-
     cooldown: int
     queue_name: str
-    min_workers: int = 0
 
 
 @dataclass

@@ -11,8 +11,7 @@ LOGGER = structlog.get_logger(__name__)
 
 
 class Monitor:
-
-    def __init__(self, broker: Broker, infrastructure_provider: InfrastructureProvider, balancer: Balancer):
+    def __init__(self, broker: Broker, infrastructure_provider: InfrastructureProvider, balancer: Balancer) -> None:
         self.broker = broker
         self.infrastructure_provider = infrastructure_provider
         self.balancer = balancer
