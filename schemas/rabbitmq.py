@@ -1,4 +1,4 @@
-class RabbitMQ(object):
+class RabbitMQ:
     QUEUE = {
         'type': 'object',
         'properties': {

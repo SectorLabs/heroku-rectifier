@@ -18,7 +18,7 @@ from .env import env  # noqa
      [Queue(queue_name='rectifier', consumers_count=1, messages=10)]),
 ])
 def test_get_current_load(config, queue_names, output, env):
-    rabbitMQ = RabbitMQ(env.config.rabbitMQ_config)
+    rabbitMQ = RabbitMQ()
     for queue in config:
         env.default_vhost.set_queue(*queue)
 

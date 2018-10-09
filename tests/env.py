@@ -1,6 +1,7 @@
 import pytest
 
-from rectifier.config import Config, BalancerConfig, QueueConfig, RabbitMQConfig
+from rectifier.config import Config, BalancerConfig, QueueConfig
+from rectifier import settings
 
 from .rabbitmq_mock import RabbitMQAPIMock
 
@@ -17,26 +18,15 @@ class TestableEnv:
     def __init__(self):
         self.rabbitmq = RabbitMQAPIMock()
 
-        queues = [
-            QueueConfig(
+        queues = dict(
+            queue=QueueConfig(
                 intervals=[1, 10, 20, 30],
                 workers=[1, 5, 50, 500],
                 cooldown=600,
-                queue_name='queue')
-        ]
+                queue_name='queue'))
 
         balancer_config = BalancerConfig(queues=queues)
-
-        rabbitMQ_config = RabbitMQConfig(
-            host=self.rabbitmq.host,
-            port=self.rabbitmq.port,
-            vhost=self.DEFAULT_VHOST,
-            user='',
-            password='',
-            secure=False)
-
-        self.config = Config(
-            rabbitMQ_config=rabbitMQ_config, balancer_config=balancer_config)
+        self.config = Config(balancer_config=balancer_config)
 
     @property
     def default_vhost(self):
@@ -63,5 +53,13 @@ def env():
 
     env = TestableEnv()
     env.start()
+    settings.RABBIT_MQ.update(
+        host=env.rabbitmq.host,
+        port=env.rabbitmq.port,
+        vhost=env.DEFAULT_VHOST,
+        user='',
+        password='',
+        secure=False)
+
     yield env
     env.stop()

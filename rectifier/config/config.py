@@ -3,18 +3,6 @@ from typing import List, Dict
 
 
 @dataclass
-class RabbitMQConfig:
-    """Configuration for RabbitMQ."""
-
-    host: str
-    port: int
-    vhost: str
-    user: str
-    password: str
-    secure: bool = False
-
-
-@dataclass
 class QueueConfig:
     """Configuration for a single Queue"""
 
@@ -34,8 +22,7 @@ class BalancerConfig:
 class Config:
     """Configuration for the auto-scaler."""
 
-    rabbitMQ_config: RabbitMQConfig
     balancer_config: BalancerConfig
 
 
-__all__ = ['RabbitMQConfig', 'QueueConfig', 'BalancerConfig', 'Config']
+__all__ = ['QueueConfig', 'BalancerConfig', 'Config']

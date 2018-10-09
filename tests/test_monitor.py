@@ -23,7 +23,7 @@ class InfrastructureProviderMock(InfrastructureProvider):
 
 
 def test_monitor(env):
-    rabbitMQ = RabbitMQ(env.config.rabbitMQ_config)
+    rabbitMQ = RabbitMQ()
     infrastructure_provider = InfrastructureProviderMock()
     balancer = Balancer(
         config=BalancerConfig(

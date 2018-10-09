@@ -6,8 +6,8 @@ import requests
 import structlog
 
 import schemas
-from rectifier.config import RabbitMQConfig
 from rectifier.queue import Queue
+from rectifier import settings
 from .broker import Broker
 
 LOGGER = structlog.get_logger(__name__)
@@ -21,19 +21,19 @@ class BrokerError(RuntimeError):
 
 
 class RabbitMQ(Broker):
-    def __init__(self, config: RabbitMQConfig) -> None:
-        self.config = config
+    def __init__(self) -> None:
+        self.config = settings.RABBIT_MQ
 
     def stats(self):
         """Gets a list of available queues and stat information
         for each available queue."""
 
-        host = self.config.host
-        port = self.config.port
-        vhost = self.config.vhost
-        user = self.config.user
-        password = self.config.password
-        protocol = 'https' if self.config.secure else 'http'
+        host = self.config.get('host')
+        port = self.config.get('port')
+        vhost = self.config.get('vhost')
+        user = self.config.get('user')
+        password = self.config.get('password')
+        protocol = 'https' if self.config.get('secure') else 'http'
 
         url = '%s://%s:%d/api/queues/%s' % (protocol, host, port, vhost)
 

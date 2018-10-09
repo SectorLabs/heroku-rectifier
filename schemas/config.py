@@ -1,29 +1,4 @@
 class Config:
-    RABBIT_MQ = {
-        'type': 'object',
-        'properties': {
-            'host': {
-                'type': 'string'
-            },
-            'port': {
-                'type': 'integer'
-            },
-            'vhost': {
-                'type': 'string'
-            },
-            'user': {
-                'type': 'string'
-            },
-            'password': {
-                'type': 'string'
-            },
-            'secure': {
-                'type': 'boolean'
-            },
-        },
-        'required': ['host', 'vhost', 'user', 'password', 'secure']
-    }
-
     QUEUE = {
         'type': 'object',
         'properties': {
@@ -39,26 +14,24 @@ class Config:
                     'type': 'number',
                 }
             },
-            'check_interval': {
+            'cooldown': {
                 'type': 'number',
             }
         },
-        'required': ['intervals', 'workers', 'check_interval']
+        'required': ['intervals', 'workers', 'cooldown']
     }
 
     SCHEMA = {
         'type': 'object',
         'properties': {
-            'rabbitMQ': RABBIT_MQ,
             'queues': {
                 'type': 'object',
-                'items': {
-                    'type': 'object',
-                    'items': QUEUE
+                'patternProperties': {
+                    ".*": QUEUE,
                 }
             }
         },
-        'required': ['queues', 'rabbitMQ']
+        'required': ['queues']
     }
 
 

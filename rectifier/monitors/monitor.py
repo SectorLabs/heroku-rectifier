@@ -1,5 +1,4 @@
 import threading
-from dataclasses import dataclass
 
 import structlog
 
@@ -17,13 +16,6 @@ class Monitor:
         self.balancer = balancer
 
         self._should_stop = threading.Event()
-
-    def start_monitoring(self):
-        LOGGER.info('Started scaler for balancer group')
-
-        while not self._should_stop.is_set():
-            self.scale()
-            self._should_stop.wait(timeout=5)
 
     def stop(self) -> None:
         self._should_stop.set()
