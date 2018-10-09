@@ -10,17 +10,13 @@ from werkzeug.serving import make_server
 
 class RabbitMQAPIMockVHost(object):
     """Mocked data that the mock returns."""
+
     _queues: Dict[str, Dict]
 
     def __init__(self) -> None:
         self._queues = {}
 
-    def set_queue(
-            self,
-            name: str,
-            consumers: int = 0,
-            messages: int = 0,
-    ) -> None:
+    def set_queue(self, name: str, consumers: int = 0, messages: int = 0) -> None:
         """Creates or updates the queue with then specified name.
 
         Arguments:
@@ -33,10 +29,7 @@ class RabbitMQAPIMockVHost(object):
             consumers:
                 The amount of the consumers in the queue.
         """
-        self._queues[name] = {
-            'messages': messages,
-            'consumers': consumers,
-        }
+        self._queues[name] = {'messages': messages, 'consumers': consumers}
 
     def set_queue_messages(self, name: str, messages: int) -> None:
         """Sets the amount of messages currently in the queue."""
@@ -53,11 +46,14 @@ class RabbitMQAPIMockVHost(object):
         """Gets a list of all queues in the format
         that the RabbitMQ API would return them in."""
 
-        return [{
-            'name': queue_name,
-            'messages': queue['messages'],
-            'consumers': queue['consumers'],
-        } for queue_name, queue in self._queues.items()]
+        return [
+            {
+                'name': queue_name,
+                'messages': queue['messages'],
+                'consumers': queue['consumers'],
+            }
+            for queue_name, queue in self._queues.items()
+        ]
 
     def _get_queue(self, name: str) -> dict:
         """Gets the queue with then specified name.
@@ -81,6 +77,7 @@ class RabbitMQAPIMock:
     This starts a HTTP server that replies
     exactly like the RabbitMQ management
     API would."""
+
     vhosts: Dict
 
     def __init__(self) -> None:
@@ -92,7 +89,8 @@ class RabbitMQAPIMock:
 
         self._app = flask.Flask(__name__)
         self._app.add_url_rule(
-            '/api/queues/<vhost_name>', 'queues', view_func=self._get_queues)
+            '/api/queues/<vhost_name>', 'queues', view_func=self._get_queues
+        )
         self._server = make_server('127.0.0.1', 0, self._app)
 
         self.host = self._server.host
@@ -121,9 +119,6 @@ class RabbitMQAPIMock:
 
         vhost = self.vhosts.get(vhost_name)
         if not vhost:
-            return flask.jsonify({
-                'error': 'Object Not Found',
-                'reason': 'Not found'
-            })
+            return flask.jsonify({'error': 'Object Not Found', 'reason': 'Not found'})
 
         return flask.jsonify(vhost.get_queues())

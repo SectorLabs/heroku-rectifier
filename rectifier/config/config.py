@@ -15,6 +15,7 @@ class QueueConfig:
 @dataclass
 class BalancerConfig:
     """Configuration for a single balancer."""
+
     queues: Dict[str, QueueConfig]
 
 

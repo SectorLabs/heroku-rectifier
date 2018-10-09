@@ -4,6 +4,7 @@ env = Env()
 
 REDIS_CHANNEL = 'config'
 REDIS_CONFIG_KEY = 'config'
+REDIS_UPDATE_TIMES = 'update_times'
 
 REDIS = {
     'host': env('REDIS_HOST', 'localhost'),

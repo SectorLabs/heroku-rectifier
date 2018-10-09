@@ -23,7 +23,9 @@ class TestableEnv:
                 intervals=[1, 10, 20, 30],
                 workers=[1, 5, 50, 500],
                 cooldown=600,
-                queue_name='queue'))
+                queue_name='queue',
+            )
+        )
 
         balancer_config = BalancerConfig(queues=queues)
         self.config = Config(balancer_config=balancer_config)
@@ -59,7 +61,8 @@ def env():
         vhost=env.DEFAULT_VHOST,
         user='',
         password='',
-        secure=False)
+        secure=False,
+    )
 
     yield env
     env.stop()

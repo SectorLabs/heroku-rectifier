@@ -1,43 +1,65 @@
 import time
+from typing import Optional
 
 import structlog
 
 from rectifier.balancer import Balancer
 from rectifier.config import ConfigReader
-from rectifier.infrastructure_provider import Heroku
-from rectifier.message_brokers import RabbitMQ
-from rectifier.monitors import Monitor
-from rectifier.storage.redis_storage import RedisStorage
-from rectifier.storage.storage import Storage
+from rectifier.infrastructure_provider import InfrastructureProvider
+from rectifier.message_brokers import Broker
+from rectifier.storage import Storage
 from rectifier import settings
 
 LOGGER = structlog.get_logger(__name__)
 
 
 class Rectifier:
-    @classmethod
-    def monitor(cls, storage: Storage):
-        config_reader = ConfigReader(storage=storage)
+    broker: Broker
+    balancer: Optional[Balancer]
+    infrastructure_provider: InfrastructureProvider
 
-        rabbitMQ = RabbitMQ()
-        balancer = Balancer(config=config_reader.config.balancer_config)
-        heroku = Heroku()
+    def __init__(
+        self,
+        storage: Storage,
+        broker: Broker,
+        infrastructure_provider: InfrastructureProvider,
+    ) -> None:
+        self.storage = storage
+        self.broker = broker
+        self.infrastructure_provider = infrastructure_provider
 
-        return Monitor(
-            broker=rabbitMQ, infrastructure_provider=heroku, balancer=balancer)
+        self.subscription = self.storage.subscribe(settings.REDIS_CONFIG_KEY)
 
-    @classmethod
-    def run(cls):
-        redis_store = RedisStorage()
+        self.update_configuration()
 
-        monitor = cls.monitor(redis_store)
-        subscription = redis_store.subscribe(settings.REDIS_CONFIG_KEY)
+    def update_configuration(self) -> None:
+        config_reader = ConfigReader(storage=self.storage)
 
-        while True:
-            message = subscription.get_message()
-            if message:
-                LOGGER.info('Updating configuration.')
-                monitor = cls.monitor(redis_store)
+        if not config_reader.config:
+            self.balancer = None
+            return
 
-            monitor.scale()
-            time.sleep(1)
+        self.balancer = Balancer(
+            config=config_reader.config.balancer_config, storage=self.storage
+        )
+
+    def rectify(self):
+        message = self.subscription.get_message()
+        if message:
+            LOGGER.info('Updating configuration.')
+            self.update_configuration()
+
+        self.scale()
+
+    def scale(self):
+        if not self.balancer:
+            return
+
+        queues = self.broker.queues(self.balancer.config.queues.keys())
+
+        for queue in queues:
+            new_consumer_count = self.balancer.compute_consumers_count(queue)
+            if new_consumer_count is None:
+                continue
+
+            self.infrastructure_provider.scale(queue.queue_name, new_consumer_count)

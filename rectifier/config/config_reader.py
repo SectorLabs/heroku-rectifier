@@ -22,41 +22,21 @@ class ConfigReadError(RuntimeError):
 class ConfigReader:
     def __init__(self, storage: Storage) -> None:
         storage_config = storage.get('config')
+        config_dict = None
+
         if storage_config is None:
-            LOGGER.info('No configuration found in the storage. Using the hardcoded one.')
-            config_dict = ConfigReader.from_file('config.json')
-            storage.set('config', json.dumps(config_dict))
+            LOGGER.info('No configuration found in the storage.')
         else:
             try:
                 config_dict = json.loads(storage_config)
             except (JSONDecodeError, TypeError):
-                LOGGER.info('Failed to parse the storage configuration. Using the hardcoded one.',
-                            config=storage_config)
-                config_dict = ConfigReader.from_file('config.json')
+                LOGGER.info(
+                    'Failed to parse the storage configuration.', config=storage_config
+                )
 
         self.raw_config = config_dict
-        self.config = ConfigReader.from_dict(config_dict)
+        self.config = ConfigReader.from_dict(config_dict) if config_dict else None
         LOGGER.info('Using configuration:', config=self.config)
-
-    @classmethod
-    def from_file(cls, filename: str) -> Config:
-        """Reads the configuration from the specified JSON file."""
-
-        errors = (
-            EOFError, MemoryError, OSError, UnicodeError, IOError,
-            EnvironmentError, TypeError, ValueError, OverflowError,
-            json.JSONDecodeError
-        )
-
-        try:
-            with open(filename, 'r') as fp:
-                data = json.loads(fp.read())
-        except errors as err:
-            message = 'Failed to read config from \'%s\'' % filename
-            LOGGER.error(message, filename=filename, err=err)
-            raise ConfigReadError(message) from err
-
-        return data
 
     @classmethod
     def from_dict(cls, data: Dict) -> Config:
@@ -70,9 +50,7 @@ class ConfigReader:
         for (queue_name, queue_properties) in queues_config.items():
             queues[queue_name] = QueueConfig(queue_name=queue_name, **queue_properties)
 
-        balancer_config = BalancerConfig(
-            queues=queues
-        )
+        balancer_config = BalancerConfig(queues=queues)
 
         return Config(balancer_config=balancer_config)
 
@@ -123,7 +101,9 @@ class ConfigReader:
                 raise ConfigReadError(message)
 
             if any([worker < 0 for worker in workers]):
-                message = 'The entries in the workers count array should all be positive.'
+                message = (
+                    'The entries in the workers count array should all be positive.'
+                )
                 LOGGER.error(message, workers=workers, queue_name=queue_name)
                 raise ConfigReadError(message)
 

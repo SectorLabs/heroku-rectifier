@@ -17,6 +17,7 @@ class BrokerError(RuntimeError):
     """Error thrown when something goes
     wrong when retrieving the load from
     the backpressure implementation."""
+
     pass
 
 
@@ -40,10 +41,18 @@ class RabbitMQ(Broker):
         auth = requests.auth.HTTPBasicAuth(user, password)
 
         errors = (
-            requests.exceptions.RequestException, requests.exceptions.HTTPError,
-            EOFError, MemoryError, OSError, UnicodeError, IOError,
-            EnvironmentError, TypeError, ValueError, OverflowError,
-            json.JSONDecodeError
+            requests.exceptions.RequestException,
+            requests.exceptions.HTTPError,
+            EOFError,
+            MemoryError,
+            OSError,
+            UnicodeError,
+            IOError,
+            EnvironmentError,
+            TypeError,
+            ValueError,
+            OverflowError,
+            json.JSONDecodeError,
         )
 
         LOGGER.debug('Making request to RabbitMQ', url=url)
@@ -72,14 +81,18 @@ class RabbitMQ(Broker):
 
         return data
 
-    def queues(self, queue_names: List[str], stats: Optional[Dict] = None) -> List[Queue]:
+    def queues(
+        self, queue_names: List[str], stats: Optional[Dict] = None
+    ) -> List[Queue]:
         if stats is None:
             stats = self.stats()
 
         queues = []
 
         for queue_name in queue_names:
-            queue_list = list(filter(lambda queue_stats: queue_stats['name'] == queue_name, stats))
+            queue_list = list(
+                filter(lambda queue_stats: queue_stats['name'] == queue_name, stats)
+            )
 
             if len(queue_list) != 1:
                 message = 'Could not find such a queue name'
@@ -88,10 +101,12 @@ class RabbitMQ(Broker):
 
             queue = queue_list[0]
 
-            queues.append(Queue(
-                queue_name=queue_name,
-                consumers_count=queue.get('consumers'),
-                messages=queue.get('messages')
-            ))
+            queues.append(
+                Queue(
+                    queue_name=queue_name,
+                    consumers_count=queue.get('consumers'),
+                    messages=queue.get('messages'),
+                )
+            )
 
         return queues

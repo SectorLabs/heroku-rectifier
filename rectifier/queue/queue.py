@@ -6,5 +6,3 @@ class Queue:
     queue_name: str
     consumers_count: int
     messages: int
-
-

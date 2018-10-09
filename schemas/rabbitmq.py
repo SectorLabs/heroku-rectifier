@@ -2,29 +2,21 @@ class RabbitMQ:
     QUEUE = {
         'type': 'object',
         'properties': {
-            'name': {
-                'type': 'string'
-            },
-            'messages': {
-                'type': 'integer'
-            },
+            'name': {'type': 'string'},
+            'messages': {'type': 'integer'},
             'message_stats': {
                 'type': 'object',
                 'properties': {
                     'ack_details': {
                         'type': 'object',
-                        'properties': {
-                            'rate': {
-                                'type': 'number'
-                            }
-                        },
-                        'required': ['rate']
+                        'properties': {'rate': {'type': 'number'}},
+                        'required': ['rate'],
                     }
                 },
                 # 'required': ['ack_details']
-            }
+            },
         },
-        'required': ['name', 'messages']
+        'required': ['name', 'messages'],
     }
 
     SCHEMA = {'type': 'array', 'items': QUEUE}
