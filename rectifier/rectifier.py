@@ -3,10 +3,14 @@ from typing import Optional
 
 import structlog
 
-from rectifier.balancer import Balancer
+from rectifier.consumer_updates_coordinator import ConsumerUpdatesCoordinator
 from rectifier.config import ConfigReader
-from rectifier.infrastructure_provider import InfrastructureProvider
+from rectifier.infrastructure_provider import (
+    InfrastructureProvider,
+    InfrastructureProviderError,
+)
 from rectifier.message_brokers import Broker
+from rectifier.message_brokers.rabbitmq import BrokerError
 from rectifier.storage import Storage
 from rectifier import settings
 
@@ -15,7 +19,7 @@ LOGGER = structlog.get_logger(__name__)
 
 class Rectifier:
     broker: Broker
-    balancer: Optional[Balancer]
+    balancer: Optional[ConsumerUpdatesCoordinator]
     infrastructure_provider: InfrastructureProvider
 
     def __init__(
@@ -39,11 +43,11 @@ class Rectifier:
             self.balancer = None
             return
 
-        self.balancer = Balancer(
-            config=config_reader.config.balancer_config, storage=self.storage
+        self.balancer = ConsumerUpdatesCoordinator(
+            config=config_reader.config.coordinator_config, storage=self.storage
         )
 
-    def rectify(self):
+    def run(self):
         message = self.subscription.get_message()
         if message:
             LOGGER.info('Updating configuration.')
@@ -55,11 +59,17 @@ class Rectifier:
         if not self.balancer:
             return
 
-        queues = self.broker.queues(self.balancer.config.queues.keys())
+        try:
+            queues = self.broker.queues(self.balancer.config.queues.keys())
+        except BrokerError:
+            return
 
         for queue in queues:
             new_consumer_count = self.balancer.compute_consumers_count(queue)
             if new_consumer_count is None:
                 continue
 
-            self.infrastructure_provider.scale(queue.queue_name, new_consumer_count)
+            try:
+                self.infrastructure_provider.scale(queue.queue_name, new_consumer_count)
+            except InfrastructureProviderError:
+                pass

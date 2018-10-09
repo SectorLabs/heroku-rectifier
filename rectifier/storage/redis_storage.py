@@ -17,7 +17,7 @@ class RedisSubscription(StorageSubscription):
 
 class RedisStorage(Storage):
     def __init__(self) -> None:
-        self.redis = redis.StrictRedis(**settings.REDIS)
+        self.redis = redis.StrictRedis.from_url(settings.REDIS_URL)
 
     def set(self, key: str, value: Any) -> None:
         return self.redis.set(key, value)

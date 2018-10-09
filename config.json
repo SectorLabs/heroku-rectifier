@@ -1,9 +1,0 @@
-{
-    "queues": {
-        "rectifier": {
-            "intervals": [0, 10, 20, 30],
-            "workers": [1, 5, 50, 500],
-            "cooldown": 30
-        }
-    }
-}

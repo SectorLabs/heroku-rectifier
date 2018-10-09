@@ -13,8 +13,8 @@ class QueueConfig:
 
 
 @dataclass
-class BalancerConfig:
-    """Configuration for a single balancer."""
+class CoordinatorConfig:
+    """Configuration for the coordinator."""
 
     queues: Dict[str, QueueConfig]
 
@@ -23,7 +23,7 @@ class BalancerConfig:
 class Config:
     """Configuration for the auto-scaler."""
 
-    balancer_config: BalancerConfig
+    coordinator_config: CoordinatorConfig
 
 
-__all__ = ['QueueConfig', 'BalancerConfig', 'Config']
+__all__ = ['QueueConfig', 'CoordinatorConfig', 'Config']

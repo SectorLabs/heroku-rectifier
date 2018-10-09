@@ -6,3 +6,5 @@ scripts/*
 .mypy_cache/*
 htmlcov/
 *.DS_STORE
+.coverage
+

@@ -2,7 +2,7 @@ import pytest
 
 from rectifier.config import (
     Config,
-    BalancerConfig,
+    CoordinatorConfig,
     QueueConfig,
     ConfigReader,
     ConfigReadError,
@@ -26,7 +26,7 @@ def test_config_reader_dict_parsing():
         }
     }
     expected_result = Config(
-        balancer_config=BalancerConfig(
+        coordinator_config=CoordinatorConfig(
             queues=dict(
                 q1=QueueConfig(
                     intervals=[0, 10, 20, 30],
@@ -51,7 +51,7 @@ def test_config_reader():
 
     config_reader = ConfigReader(storage=storage)
     expected_result = Config(
-        balancer_config=BalancerConfig(
+        coordinator_config=CoordinatorConfig(
             queues=dict(
                 rectifier=QueueConfig(
                     intervals=[0, 10, 20, 30],

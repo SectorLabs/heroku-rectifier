@@ -1,6 +1,6 @@
 import pytest
 
-from rectifier.config import Config, BalancerConfig, QueueConfig
+from rectifier.config import Config, CoordinatorConfig, QueueConfig
 from rectifier import settings
 
 from .rabbitmq_mock import RabbitMQAPIMock
@@ -27,8 +27,8 @@ class TestableEnv:
             )
         )
 
-        balancer_config = BalancerConfig(queues=queues)
-        self.config = Config(balancer_config=balancer_config)
+        coordinator_config = CoordinatorConfig(queues=queues)
+        self.config = Config(coordinator_config=coordinator_config)
 
     @property
     def default_vhost(self):
@@ -56,8 +56,7 @@ def env():
     env = TestableEnv()
     env.start()
     settings.RABBIT_MQ.update(
-        host=env.rabbitmq.host,
-        port=env.rabbitmq.port,
+        host='%s:%s' % (env.rabbitmq.host, env.rabbitmq.port),
         vhost=env.DEFAULT_VHOST,
         user='',
         password='',

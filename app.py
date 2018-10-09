@@ -4,6 +4,7 @@ import time
 
 from flask import Flask, render_template, request, redirect, url_for, flash
 import structlog
+from flask_basicauth import BasicAuth
 
 from rectifier.config import ConfigReader, ConfigReadError
 from rectifier.infrastructure_provider import Heroku
@@ -17,6 +18,14 @@ from schemas import Config
 LOGGER = structlog.get_logger(__name__)
 
 app = Flask(__name__)
+app.secret_key = settings.SECRET_KEY
+
+app.config['BASIC_AUTH_USERNAME'] = settings.BASIC_AUTH_USER
+app.config['BASIC_AUTH_PASSWORD'] = settings.BASIC_AUTH_PASSWORD
+app.config['BASIC_AUTH_FORCE'] = True
+
+basic_auth = BasicAuth(app)
+
 storage = RedisStorage()
 config_reader = ConfigReader(storage=storage)
 
@@ -27,12 +36,12 @@ class TaskThread(threading.Thread):
             storage=RedisStorage(), broker=RabbitMQ(), infrastructure_provider=Heroku()
         )
         while True:
-            rectifier.rectify()
-            time.sleep(1)
+            rectifier.run()
+            time.sleep(settings.TIME_BETWEEN_REQUESTS)
 
 
 @app.route("/")
-def main():
+def home():
     return render_template(
         'index.html',
         schema=Config.SCHEMA,
@@ -56,7 +65,7 @@ def submit_configuration():
     except ConfigReadError as error:
         flash(str(error), 'error')
 
-    return redirect(url_for('main'))
+    return redirect(url_for('home'))
 
 
 class WebThread(threading.Thread):
@@ -64,19 +73,8 @@ class WebThread(threading.Thread):
         app.run()
 
 
-@app.context_processor
-def utility_processor():
-    def validate_configuration(config):
-        if not config:
-            return False
-
-        return ConfigReader.is_valid(json.loads(config))
-
-    return dict(validate_configuration=validate_configuration)
-
-
 t = TaskThread()
 t.start()
 
-app.secret_key = '123'
-app.run(debug=True)
+if __name__ == '__main__':
+    app.run(host=settings.HOST, port=settings.PORT)

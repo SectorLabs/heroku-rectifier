@@ -30,13 +30,12 @@ class RabbitMQ(Broker):
         for each available queue."""
 
         host = self.config.get('host')
-        port = self.config.get('port')
         vhost = self.config.get('vhost')
         user = self.config.get('user')
         password = self.config.get('password')
         protocol = 'https' if self.config.get('secure') else 'http'
 
-        url = '%s://%s:%d/api/queues/%s' % (protocol, host, port, vhost)
+        url = '%s://%s/api/queues/%s' % (protocol, host, vhost)
 
         auth = requests.auth.HTTPBasicAuth(user, password)
 

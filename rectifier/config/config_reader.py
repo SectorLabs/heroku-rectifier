@@ -6,7 +6,7 @@ import jsonschema
 import structlog
 
 import schemas
-from rectifier.config import Config, BalancerConfig, QueueConfig
+from rectifier.config import Config, CoordinatorConfig, QueueConfig
 from rectifier.storage.storage import Storage
 
 LOGGER = structlog.get_logger(__name__)
@@ -50,17 +50,9 @@ class ConfigReader:
         for (queue_name, queue_properties) in queues_config.items():
             queues[queue_name] = QueueConfig(queue_name=queue_name, **queue_properties)
 
-        balancer_config = BalancerConfig(queues=queues)
+        coordinator_config = CoordinatorConfig(queues=queues)
 
-        return Config(balancer_config=balancer_config)
-
-    @classmethod
-    def is_valid(cls, data: Dict) -> bool:
-        try:
-            jsonschema.validate(data, schemas.Config.SCHEMA)
-            return True
-        except jsonschema.ValidationError:
-            return False
+        return Config(coordinator_config=coordinator_config)
 
     @classmethod
     def validate(cls, data: Dict) -> None:

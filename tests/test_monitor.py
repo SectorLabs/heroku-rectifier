@@ -40,7 +40,7 @@ def test_monitor(env):
         # Should scale to one consumer, because the workers count
         # for the 0 - 10 interval is 1
         env.default_vhost.set_queue('q1')
-        rectifier.rectify()
+        rectifier.run()
 
         assert infrastructure_provider.called_count == 1
         assert infrastructure_provider.consumers['q1'] == 1
@@ -51,13 +51,13 @@ def test_monitor(env):
         # Move 59 seconds in the future.
         # As the cooldown is not yet elapsed, nothing should happen.
         frozen_time.move_to('2012-01-14 03:00:59')
-        rectifier.rectify()
+        rectifier.run()
         assert infrastructure_provider.called_count == 1
         assert infrastructure_provider.consumers['q1'] == 1
 
         # Move one more second. The CD is elapsed. Check the scaling happened.
         frozen_time.move_to('2012-01-14 03:01:00')
-        rectifier.rectify()
+        rectifier.run()
         assert infrastructure_provider.called_count == 2
         assert infrastructure_provider.consumers['q1'] == 2
 
@@ -67,7 +67,7 @@ def test_monitor(env):
         # Move ahead to more the 60 seconds in the future. As the workers were manually adjusted,
         # check that they're not scaled anymore
         frozen_time.move_to('2012-01-14 03:02:00')
-        rectifier.rectify()
+        rectifier.run()
         assert infrastructure_provider.called_count == 2
         assert infrastructure_provider.consumers['q1'] == 2
 
@@ -75,7 +75,7 @@ def test_monitor(env):
         env.default_vhost.set_queue('q1', 3, 75)
 
         # Check that downscaling works
-        rectifier.rectify()
+        rectifier.run()
         assert infrastructure_provider.called_count == 3
         assert infrastructure_provider.consumers['q1'] == 2
 
@@ -87,7 +87,7 @@ def test_monitor(env):
 
         env.default_vhost.set_queue('q1', 2, 0)
         frozen_time.move_to('2012-01-14 03:03:00')
-        rectifier.rectify()
+        rectifier.run()
         assert infrastructure_provider.called_count == 4
         assert infrastructure_provider.consumers['q1'] == 1
 
@@ -105,7 +105,7 @@ def monitor_with_no_config(env):
 
     assert not storage.get(settings.REDIS_CONFIG_KEY)
     assert not pickle.loads(storage.get(settings.REDIS_UPDATE_TIMES))
-    rectifier.rectify()
+    rectifier.run()
 
     assert infrastructure_provider.called_count == 0
     assert not storage.get(settings.REDIS_CONFIG_KEY)
@@ -120,7 +120,7 @@ def monitor_with_no_config(env):
         # Should scale to one consumer, because the workers count
         # for the 0 - 10 interval is 1
         env.default_vhost.set_queue('q1')
-        rectifier.rectify()
+        rectifier.run()
 
         assert infrastructure_provider.called_count == 1
         assert infrastructure_provider.consumers['q1'] == 1
@@ -130,7 +130,7 @@ def monitor_with_no_config(env):
         )
 
         frozen_time.move_to('2012-01-14 03:01:00')
-        rectifier.rectify()
+        rectifier.run()
         assert infrastructure_provider.called_count == 2
         assert infrastructure_provider.consumers['q1'] == 2
         assert pickle.loads(storage.get(settings.REDIS_UPDATE_TIMES)) == dict(
