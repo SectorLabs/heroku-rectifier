@@ -13,7 +13,7 @@ The configuration is made in two parts:
 This is made through a Flask endpoint ('/').
 
 How often and how Rectifier should update consumers, based on the queues stats, is configured
-thorught a JSON file, editable through this endpoint.
+thorugh a JSON file, editable through this endpoint.
 
 Rectifier can watch as many queues as needed. An example of configuration looks like this:
 
