@@ -9,6 +9,10 @@ class StorageSubscription(ABC):
 
 
 class Storage(ABC):
+    """
+    An abstraction of a key-value persistent storage.
+    """
+
     @abstractmethod
     def get(self, key: str) -> Any:
         """Get the value of the given key."""

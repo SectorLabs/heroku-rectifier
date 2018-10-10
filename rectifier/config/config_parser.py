@@ -19,8 +19,12 @@ class ConfigReadError(RuntimeError):
     pass
 
 
-class ConfigReader:
+class ConfigParser:
+    """A utility class for parsing and validating configuration."""
+
     def __init__(self, storage: Storage) -> None:
+        """Takes the configuration from the storage, and tries to parse it."""
+
         storage_config = storage.get('config')
         config_dict = None
 
@@ -35,7 +39,7 @@ class ConfigReader:
                 )
 
         self.raw_config = config_dict
-        self.config = ConfigReader.from_dict(config_dict) if config_dict else None
+        self.config = ConfigParser.from_dict(config_dict) if config_dict else None
         LOGGER.info('Using configuration:', config=self.config)
 
     @classmethod

@@ -15,7 +15,15 @@ LOGGER = structlog.get_logger(__name__)
 
 
 class Heroku(InfrastructureProvider):
+    """A wrapper over the Heroku Platofrm API, providing the capability to scale dynos for given queue names."""
+
     def scale(self, queue_name: str, consumers_count: int) -> None:
+        """
+        Scales dynos.
+
+        :param queue_name: The queue for which the dynos should be scaled.
+        :param consumers_count: The new number of dynos to be used.
+        """
         LOGGER.info("Scaling queue %s to %d consumers" % (queue_name, consumers_count))
 
         try:

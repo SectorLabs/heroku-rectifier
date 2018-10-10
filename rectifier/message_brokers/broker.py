@@ -5,6 +5,10 @@ from rectifier.queue import Queue
 
 
 class Broker(ABC):
+    """
+    A message broker in which queues exist. Able to retrieve stats about the queues in real time.
+    """
+
     @abstractmethod
     def stats(self):
         """Retrieves all the available queues stats"""

@@ -1,4 +1,10 @@
 from .config import CoordinatorConfig, QueueConfig, Config
-from .config_reader import ConfigReader, ConfigReadError
+from .config_parser import ConfigParser, ConfigReadError
 
-__all__ = ['CoordinatorConfig', 'QueueConfig', 'Config', 'ConfigReader', 'ConfigReadError']
+__all__ = [
+    'CoordinatorConfig',
+    'QueueConfig',
+    'Config',
+    'ConfigParser',
+    'ConfigReadError',
+]

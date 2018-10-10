@@ -4,7 +4,7 @@ from rectifier.config import (
     Config,
     CoordinatorConfig,
     QueueConfig,
-    ConfigReader,
+    ConfigParser,
     ConfigReadError,
 )
 from tests.redis_mock import RedisStorageMock
@@ -43,13 +43,13 @@ def test_config_reader_dict_parsing():
             )
         )
     )
-    assert ConfigReader.from_dict(config) == expected_result
+    assert ConfigParser.from_dict(config) == expected_result
 
 
 def test_config_reader():
     storage = RedisStorageMock()
 
-    config_reader = ConfigReader(storage=storage)
+    config_reader = ConfigParser(storage=storage)
     expected_result = Config(
         coordinator_config=CoordinatorConfig(
             queues=dict(
@@ -66,7 +66,7 @@ def test_config_reader():
     assert config_reader.config == expected_result
 
     storage.set('config', None)
-    config_reader = ConfigReader(storage=storage)
+    config_reader = ConfigParser(storage=storage)
     assert config_reader.config is None
 
 
@@ -137,4 +137,4 @@ def test_config_reader():
 )
 def test_invalid_queue_configurations(config):
     with pytest.raises(ConfigReadError):
-        ConfigReader.validate(config)
+        ConfigParser.validate(config)

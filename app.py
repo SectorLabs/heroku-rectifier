@@ -6,7 +6,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 import structlog
 from flask_basicauth import BasicAuth
 
-from rectifier.config import ConfigReader, ConfigReadError
+from rectifier.config import ConfigParser, ConfigReadError
 from rectifier.infrastructure_provider import Heroku
 from rectifier.message_brokers import RabbitMQ
 from rectifier.rectifier import Rectifier
@@ -27,10 +27,10 @@ app.config['BASIC_AUTH_FORCE'] = True
 basic_auth = BasicAuth(app)
 
 storage = RedisStorage()
-config_reader = ConfigReader(storage=storage)
+config_reader = ConfigParser(storage=storage)
 
 
-class TaskThread(threading.Thread):
+class RectifierThread(threading.Thread):
     def run(self):
         rectifier = Rectifier(
             storage=RedisStorage(), broker=RabbitMQ(), infrastructure_provider=Heroku()
@@ -53,13 +53,13 @@ def home():
 def submit_configuration():
     config = request.form['code']
     try:
-        ConfigReader.validate(json.loads(config))
+        ConfigParser.validate(json.loads(config))
 
         storage.set(settings.REDIS_CONFIG_KEY, config)
         storage.publish(settings.REDIS_CHANNEL, None)
 
         global config_reader
-        config_reader = ConfigReader(storage=storage)
+        config_reader = ConfigParser(storage=storage)
 
         flash('Succes!', 'info')
     except ConfigReadError as error:
@@ -73,8 +73,8 @@ class WebThread(threading.Thread):
         app.run()
 
 
-t = TaskThread()
-t.start()
+rectifier = RectifierThread()
+rectifier.start()
 
 if __name__ == '__main__':
     app.run(host=settings.HOST, port=settings.PORT)

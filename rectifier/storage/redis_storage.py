@@ -16,6 +16,10 @@ class RedisSubscription(StorageSubscription):
 
 
 class RedisStorage(Storage):
+    """
+    A wrapper over Redis, providing persistent storage and publish/subscribe capabilities.
+    """
+
     def __init__(self) -> None:
         self.redis = redis.StrictRedis.from_url(settings.REDIS_URL)
 

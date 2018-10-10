@@ -16,12 +16,16 @@ LOGGER = structlog.get_logger(__name__)
 class BrokerError(RuntimeError):
     """Error thrown when something goes
     wrong when retrieving the load from
-    the backpressure implementation."""
+    the Broker implementation."""
 
     pass
 
 
 class RabbitMQ(Broker):
+    """
+    An wrapper over RabbitMQ. Can fetch data about the queues in real time.
+    """
+
     def __init__(self) -> None:
         self.config = settings.RABBIT_MQ
 

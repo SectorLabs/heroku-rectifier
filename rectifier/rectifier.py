@@ -4,7 +4,7 @@ from typing import Optional
 import structlog
 
 from rectifier.consumer_updates_coordinator import ConsumerUpdatesCoordinator
-from rectifier.config import ConfigReader
+from rectifier.config import ConfigParser
 from rectifier.infrastructure_provider import (
     InfrastructureProvider,
     InfrastructureProviderError,
@@ -18,8 +18,16 @@ LOGGER = structlog.get_logger(__name__)
 
 
 class Rectifier:
+    """
+    The main _controller_ of the autoscaler.
+
+    Keeps track over the configuration, updates everything accordingly.
+    Checks the queue stats, asks for coordination on whether the consumers should be scaled or not,
+    and scales them if needed.
+    """
+
     broker: Broker
-    balancer: Optional[ConsumerUpdatesCoordinator]
+    consumer_updates_coordinator: Optional[ConsumerUpdatesCoordinator]
     infrastructure_provider: InfrastructureProvider
 
     def __init__(
@@ -37,17 +45,23 @@ class Rectifier:
         self.update_configuration()
 
     def update_configuration(self) -> None:
-        config_reader = ConfigReader(storage=self.storage)
+        """
+        Updates the configuration of the coordinator.
+        """
+        config_reader = ConfigParser(storage=self.storage)
 
         if not config_reader.config:
-            self.balancer = None
+            self.consumer_updates_coordinator = None
             return
 
-        self.balancer = ConsumerUpdatesCoordinator(
+        self.consumer_updates_coordinator = ConsumerUpdatesCoordinator(
             config=config_reader.config.coordinator_config, storage=self.storage
         )
 
     def run(self):
+        """
+        Checks if the configuration has changed, and scales the consumers if needed.
+        """
         message = self.subscription.get_message()
         if message:
             LOGGER.info('Updating configuration.')
@@ -56,16 +70,23 @@ class Rectifier:
         self.scale()
 
     def scale(self):
-        if not self.balancer:
+        """
+        Scales the consumers, if needed.
+        """
+        if not self.consumer_updates_coordinator:
             return
 
         try:
-            queues = self.broker.queues(self.balancer.config.queues.keys())
+            queues = self.broker.queues(
+                self.consumer_updates_coordinator.config.queues.keys()
+            )
         except BrokerError:
             return
 
         for queue in queues:
-            new_consumer_count = self.balancer.compute_consumers_count(queue)
+            new_consumer_count = self.consumer_updates_coordinator.compute_consumers_count(
+                queue
+            )
             if new_consumer_count is None:
                 continue
 
