@@ -5,7 +5,7 @@ No fancy logo available.
 
 ## Configuration
 
-You have to configure rectifier for it to actually do something.
+You have to configure Rectifier for it to actually do something.
 The configuration is made in two parts:
 
 ### Queues Configuration
@@ -13,7 +13,7 @@ The configuration is made in two parts:
 This is made through a Flask endpoint ('/').
 
 How often and how Rectifier should update consumers, based on the queues stats, is configured
-thorugh a JSON file, editable through this endpoint.
+through a JSON file, editable at this endpoint.
 
 Rectifier can watch as many queues as needed. An example of configuration looks like this:
 
@@ -67,7 +67,7 @@ will not be used):
 
 ##### Cooldown
 
-The `cooldown` attribute (which should be a positive integer, expressing seconds), tells Rectify how much
+The `cooldown` attribute (which should be a positive integer, expressing seconds), tells Rectifier how much
 it should wait between succesive scales.
 
 After one scale operation has been made, nothing else will be done until this cooldown
