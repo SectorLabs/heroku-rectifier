@@ -3,8 +3,9 @@ from typing import Optional
 
 import structlog
 
-from rectifier.consumer_updates_coordinator import ConsumerUpdatesCoordinator
+from rectifier import settings
 from rectifier.config import ConfigParser
+from rectifier.consumer_updates_coordinator import ConsumerUpdatesCoordinator
 from rectifier.infrastructure_provider import (
     InfrastructureProvider,
     InfrastructureProviderError,
@@ -12,7 +13,6 @@ from rectifier.infrastructure_provider import (
 from rectifier.message_brokers import Broker
 from rectifier.message_brokers.rabbitmq import BrokerError
 from rectifier.storage import Storage
-from rectifier import settings
 
 LOGGER = structlog.get_logger(__name__)
 

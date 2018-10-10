@@ -1,7 +1,7 @@
 import pytest
 
-from rectifier.config import Config, CoordinatorConfig, QueueConfig
 from rectifier import settings
+from rectifier.config import Config, CoordinatorConfig, QueueConfig
 
 from .rabbitmq_mock import RabbitMQAPIMock
 

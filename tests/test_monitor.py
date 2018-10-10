@@ -3,11 +3,11 @@ from collections import defaultdict
 
 from freezegun import freeze_time
 
+from rectifier import settings
 from rectifier.infrastructure_provider import InfrastructureProvider
 from rectifier.message_brokers import RabbitMQ
 from rectifier.rectifier import Rectifier
 from tests.redis_mock import RedisStorageMock
-from rectifier import settings
 
 from .env import env  # noqa
 

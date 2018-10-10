@@ -2,10 +2,10 @@ import pytest
 
 from rectifier.config import (
     Config,
-    CoordinatorConfig,
-    QueueConfig,
     ConfigParser,
     ConfigReadError,
+    CoordinatorConfig,
+    QueueConfig,
 )
 from tests.redis_mock import RedisStorageMock
 

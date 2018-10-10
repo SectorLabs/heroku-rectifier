@@ -1,4 +1,4 @@
-from typing import Optional, Any
+from typing import Any, Optional
 
 from rectifier.storage import Storage, StorageSubscription
 
