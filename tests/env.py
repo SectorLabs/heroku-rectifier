@@ -24,6 +24,7 @@ class TestableEnv:
                 workers=[1, 5, 50, 500],
                 cooldown=600,
                 queue_name='queue',
+                consumers_formation_name='worker_queue',
             )
         )
 

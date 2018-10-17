@@ -23,7 +23,8 @@ Rectifier can watch as many queues as needed. An example of configuration looks 
         "photos": {
             "intervals": [0, 100, 1000],
             "workers": [1, 2, 3],
-            "cooldown": 30
+            "cooldown": 30,
+            "consumers_formation_name": "worker_photos"
         }
     }
 }
@@ -72,6 +73,10 @@ it should wait between succesive scales.
 
 After one scale operation has been made, nothing else will be done until this cooldown
 expires.
+
+##### The consumers formation name
+
+This is the key used for identifying a dyno formation on Heroku.
 
 ### Environment Variables
 

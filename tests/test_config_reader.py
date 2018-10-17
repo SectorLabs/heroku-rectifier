@@ -17,11 +17,13 @@ def test_config_reader_dict_parsing():
                 'intervals': [0, 10, 20, 30],
                 'workers': [1, 5, 50, 500],
                 'cooldown': 30,
+                'consumers_formation_name': 'q1w',
             },
             'q2': {
                 'intervals': [0, 10, 20, 40],
                 'workers': [1, 5, 50, 101],
                 'cooldown': 35,
+                'consumers_formation_name': 'q2w',
             },
         }
     }
@@ -33,12 +35,14 @@ def test_config_reader_dict_parsing():
                     workers=[1, 5, 50, 500],
                     cooldown=30,
                     queue_name='q1',
+                    consumers_formation_name='q1w',
                 ),
                 q2=QueueConfig(
                     intervals=[0, 10, 20, 40],
                     workers=[1, 5, 50, 101],
                     cooldown=35,
                     queue_name='q2',
+                    consumers_formation_name='q2w',
                 ),
             )
         )
@@ -58,6 +62,7 @@ def test_config_reader():
                     workers=[1, 5, 50, 51],
                     cooldown=30,
                     queue_name='rectifier',
+                    consumers_formation_name='worker_rectifier',
                 )
             )
         )
@@ -81,6 +86,7 @@ def test_config_reader():
                         'intervals': [0, 10, 20, 30],
                         'workers': [1, 5, 50],
                         'cooldown': 30,
+                        'consumers_formation_name': 'q1w',
                     }
                 }
             }
@@ -93,6 +99,7 @@ def test_config_reader():
                         'intervals': [1, 10, 20, 30],
                         'workers': [1, 5, 50, 500],
                         'cooldown': 30,
+                        'consumers_formation_name': 'q1w',
                     }
                 }
             }
@@ -105,6 +112,7 @@ def test_config_reader():
                         # Negative workers
                         'workers': [-1, 5, 50, 500],
                         'cooldown': 5,
+                        'consumers_formation_name': 'q1w',
                     }
                 }
             }
@@ -117,6 +125,7 @@ def test_config_reader():
                         'workers': [1, 5, 50, 500],
                         # Negative cooldown
                         'cooldown': -1,
+                        'consumers_formation_name': 'q1w',
                     }
                 }
             }
@@ -129,6 +138,7 @@ def test_config_reader():
                         'intervals': [0, 20, 1, 30],
                         'workers': [1, 5, 10, 500],
                         'cooldown': 1,
+                        'consumers_formation_name': 'q1w',
                     }
                 }
             }

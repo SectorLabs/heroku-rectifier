@@ -1,4 +1,5 @@
 venv/*
+env/*
 .pytest_cache/*
 scripts/*
 *.idea/

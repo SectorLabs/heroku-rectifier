@@ -11,7 +11,7 @@ class RedisStorageMockSubscription(StorageSubscription):
 class RedisStorageMock(Storage):
     def __init__(self):
         self.data = dict(
-            config=b'{"queues":{"rectifier":{"intervals":[0,10,20,30],"workers":[1,5,50,51],"cooldown":30}}}'
+            config=b'{"queues":{"rectifier":{"intervals":[0,10,20,30],"workers":[1,5,50,51],"cooldown":30,"consumers_formation_name":"worker_rectifier"}}}'
         )
 
     def get(self, key: str) -> Any:

@@ -28,7 +28,7 @@ def test_monitor(env):
 
     storage.set(
         settings.REDIS_CONFIG_KEY,
-        b'{"queues":{"q1":{"intervals":[0,10,100],"workers":[1,2,3],"cooldown":60}}}',
+        b'{"queues":{"q1":{"intervals":[0,10,100],"workers":[1,2,3],"cooldown":60,"consumers_formation_name":"worker_q1"}}}',
     )
     rectifier = Rectifier(
         broker=RabbitMQ(),
@@ -43,7 +43,7 @@ def test_monitor(env):
         rectifier.run()
 
         assert infrastructure_provider.called_count == 1
-        assert infrastructure_provider.consumers['q1'] == 1
+        assert infrastructure_provider.consumers['worker_q1'] == 1
 
         # Set the queue to one consumer and 10 messages
         env.default_vhost.set_queue('q1', 1, 10)
@@ -53,13 +53,13 @@ def test_monitor(env):
         frozen_time.move_to('2012-01-14 03:00:59')
         rectifier.run()
         assert infrastructure_provider.called_count == 1
-        assert infrastructure_provider.consumers['q1'] == 1
+        assert infrastructure_provider.consumers['worker_q1'] == 1
 
         # Move one more second. The CD is elapsed. Check the scaling happened.
         frozen_time.move_to('2012-01-14 03:01:00')
         rectifier.run()
         assert infrastructure_provider.called_count == 2
-        assert infrastructure_provider.consumers['q1'] == 2
+        assert infrastructure_provider.consumers['worker_q1'] == 2
 
         # Set the queue to more than 100 messages, but set the workers to 3 (to simulate a manual change)
         env.default_vhost.set_queue('q1', 3, 123)
@@ -69,7 +69,7 @@ def test_monitor(env):
         frozen_time.move_to('2012-01-14 03:02:00')
         rectifier.run()
         assert infrastructure_provider.called_count == 2
-        assert infrastructure_provider.consumers['q1'] == 2
+        assert infrastructure_provider.consumers['worker_q1'] == 2
 
         # Consume messages from the queue
         env.default_vhost.set_queue('q1', 3, 75)
@@ -77,19 +77,19 @@ def test_monitor(env):
         # Check that downscaling works
         rectifier.run()
         assert infrastructure_provider.called_count == 3
-        assert infrastructure_provider.consumers['q1'] == 2
+        assert infrastructure_provider.consumers['worker_q1'] == 2
 
         # Check that the CD is respected for downscaling too
         env.default_vhost.set_queue('q1', 2, 7)
         frozen_time.move_to('2012-01-14 03:02:01')
         assert infrastructure_provider.called_count == 3
-        assert infrastructure_provider.consumers['q1'] == 2
+        assert infrastructure_provider.consumers['worker_q1'] == 2
 
         env.default_vhost.set_queue('q1', 2, 0)
         frozen_time.move_to('2012-01-14 03:03:00')
         rectifier.run()
         assert infrastructure_provider.called_count == 4
-        assert infrastructure_provider.consumers['q1'] == 1
+        assert infrastructure_provider.consumers['worker_q1'] == 1
 
 
 def monitor_with_no_config(env):
@@ -113,7 +113,7 @@ def monitor_with_no_config(env):
 
     storage.set(
         settings.REDIS_CONFIG_KEY,
-        b'{"queues":{"q1":{"intervals":[0,10,100],"workers":[1,2,3],"cooldown":60}}}',
+        b'{"queues":{"q1":{"intervals":[0,10,100],"workers":[1,2,3],"cooldown":60,"consumers_formation_name":"worker_q1"}}}',
     )
 
     with freeze_time("2012-01-14 03:00:00") as frozen_time:
@@ -123,7 +123,7 @@ def monitor_with_no_config(env):
         rectifier.run()
 
         assert infrastructure_provider.called_count == 1
-        assert infrastructure_provider.consumers['q1'] == 1
+        assert infrastructure_provider.consumers['worker_q1'] == 1
 
         assert pickle.loads(storage.get(settings.REDIS_UPDATE_TIMES)) == dict(
             q1=frozen_time
@@ -132,7 +132,7 @@ def monitor_with_no_config(env):
         frozen_time.move_to('2012-01-14 03:01:00')
         rectifier.run()
         assert infrastructure_provider.called_count == 2
-        assert infrastructure_provider.consumers['q1'] == 2
+        assert infrastructure_provider.consumers['worker_q1'] == 2
         assert pickle.loads(storage.get(settings.REDIS_UPDATE_TIMES)) == dict(
             q1=frozen_time
         )

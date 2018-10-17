@@ -1,7 +1,7 @@
 import pickle
 from datetime import datetime
 from json import JSONDecodeError
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 
 import structlog
 
@@ -58,7 +58,9 @@ class ConsumerUpdatesCoordinator:
             settings.REDIS_UPDATE_TIMES, pickle.dumps(self.queues_update_time)
         )
 
-    def compute_consumers_count(self, queue: Queue) -> Optional[int]:
+    def compute_consumers_count(
+        self, queue: Queue
+    ) -> Tuple[Optional[int], Optional[str]]:
         """
         Computes the count of the consumers which should be used for a queue, given its stats and the configuration.
 
@@ -86,7 +88,7 @@ class ConsumerUpdatesCoordinator:
                     cooldown=queue_config.cooldown,
                     timedelta=time_since_update.seconds,
                 )
-                return None
+                return None, None
 
         matching_interval_index = [
             i
@@ -101,7 +103,7 @@ class ConsumerUpdatesCoordinator:
                 "Nothing to do. Queue has the proper consumer count.",
                 consumer_cont=queue.consumers_count,
             )
-            return None
+            return None, None
 
         self._update_time(queue.queue_name)
-        return consumers_for_interval
+        return consumers_for_interval, queue_config.consumers_formation_name

@@ -84,13 +84,16 @@ class Rectifier:
             return
 
         for queue in queues:
-            new_consumer_count = self.consumer_updates_coordinator.compute_consumers_count(
+            new_consumer_count, consumer_formation = self.consumer_updates_coordinator.compute_consumers_count(
                 queue
             )
+
             if new_consumer_count is None:
                 continue
 
             try:
-                self.infrastructure_provider.scale(queue.queue_name, new_consumer_count)
+                self.infrastructure_provider.scale(
+                    consumer_formation, new_consumer_count
+                )
             except InfrastructureProviderError:
                 pass

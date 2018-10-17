@@ -10,6 +10,7 @@ class QueueConfig:
     workers: List[int]
     cooldown: int
     queue_name: str
+    consumers_formation_name: str
 
 
 @dataclass

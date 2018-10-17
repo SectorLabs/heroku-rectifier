@@ -5,8 +5,9 @@ class Config:
             'intervals': {'type': 'array', 'items': {'type': 'number'}},
             'workers': {'type': 'array', 'items': {'type': 'number'}},
             'cooldown': {'type': 'number'},
+            'consumers_formation_name': {'type': 'string'},
         },
-        'required': ['intervals', 'workers', 'cooldown'],
+        'required': ['intervals', 'workers', 'cooldown', 'consumers_formation_name'],
     }
 
     SCHEMA = {
