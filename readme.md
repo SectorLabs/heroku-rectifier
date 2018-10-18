@@ -19,7 +19,7 @@ Rectifier can watch as many queues as needed. An example of configuration looks 
 
 ```json
 {
-    "queues": {
+    "bayut-development": {
         "photos": {
             "intervals": [0, 100, 1000],
             "workers": [1, 2, 3],
@@ -86,23 +86,7 @@ This is the key used for identifying a dyno formation on Heroku.
 
 The URL to be used for Redis storage of the configuration and the update times.
 This is automatically provided by Heroku if you provide the app with Heroku Redis.
-
-#### Rabbit MQ
-
-The Rabbit MQ configuration to be used for inspecting queues.
-
-> RABBIT_MQ_HOST
-
-The Rabbit MQ hostname (including the port if needed).
-
-> RABBIT_MQ_USER
-
-> RABBIT_MQ_PASSWORD
-
-> RABBIT_MQ_SECURE
-
-> RABBIT_MQ_VHOST
-
+    
 #### Flask
 
 > SECRET_KEY
@@ -140,3 +124,11 @@ The app name for which consumers should be scaled.
 > TIME_BETWEEN_REQUESTS
 
 How often should Rectifier request RabbitMQ for stats.
+
+> RABBIT_MQ_SECURE
+
+Whether it should use `https` for rabbit MQ http calls.
+
+> DRY_RUN
+
+If true, the rectifier won't _actually_ scale.
