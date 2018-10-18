@@ -7,15 +7,15 @@ from .env import env  # noqa
 
 
 @pytest.mark.parametrize(
-    'config, queue_names, output',
+    'config, interest_queues, output',
     [
         (
-            [('rectifier', 1, 1000)],
+            [('app', 'rectifier', 1, 1000)],
             ['rectifier'],
             [Queue(queue_name='rectifier', consumers_count=1, messages=1000)],
         ),
         (
-            [('rectifier', 1, 10), ('rectifier2', 2, 30)],
+            [('app', 'rectifier', 1, 10), ('app', 'rectifier2', 2, 30)],
             ['rectifier', 'rectifier2'],
             [
                 Queue(queue_name='rectifier', consumers_count=1, messages=10),
@@ -23,17 +23,18 @@ from .env import env  # noqa
             ],
         ),
         (
-            [('rectifier', 1, 10), ('rectifier2', 2, 30)],
+            [('app', 'rectifier', 1, 10), ('app', 'rectifier2', 2, 30)],
             ['rectifier'],
             [Queue(queue_name='rectifier', consumers_count=1, messages=10)],
         ),
     ],
 )
-def test_get_current_load(config, queue_names, output, env):
-    rabbitMQ = RabbitMQ()
+def test_get_current_load(config, interest_queues, output, env):
     for queue in config:
-        env.default_vhost.set_queue(*queue)
+        env.rabbitmq.set_queue(*queue)
 
-    queues = rabbitMQ.queues(queue_names, rabbitMQ.stats())
+    interest_queues = RabbitMQ.queues(
+        interest_queues, RabbitMQ.stats(env.rabbit_mq_uri(app='app'))
+    )
     for queue in output:
-        assert queue in queues
+        assert queue in interest_queues

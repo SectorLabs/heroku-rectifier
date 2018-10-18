@@ -1,7 +1,8 @@
 import pickle
+from collections import defaultdict
 from datetime import datetime
 from json import JSONDecodeError
-from typing import Dict, Optional, Tuple
+from typing import DefaultDict, Dict, Optional, Tuple
 
 import structlog
 
@@ -20,7 +21,7 @@ class ConsumerUpdatesCoordinator:
     Computes the count of the consumers which should be used for a given queue.
     """
 
-    queues_update_time: Dict[str, datetime]
+    queues_update_time: DefaultDict[str, Dict[str, datetime]]
 
     def __init__(self, config: CoordinatorConfig, storage: Storage) -> None:
         """
@@ -32,7 +33,7 @@ class ConsumerUpdatesCoordinator:
 
         update_times = storage.get(settings.REDIS_UPDATE_TIMES)
         if update_times is None:
-            self.queues_update_time = dict()
+            self.queues_update_time = defaultdict(dict)
             return
 
         try:
@@ -44,26 +45,27 @@ class ConsumerUpdatesCoordinator:
                 queues_update_time=update_times,
             )
 
-        self.queues_update_time = dict()
+        self.queues_update_time = defaultdict(dict)
 
-    def _update_time(self, queue_name: str) -> None:
+    def _update_time(self, app_name: str, queue_name: str) -> None:
         """
         Updates the time of update for a given queue name, both in memory and in the persistent storage.
         :param queue_name: The name of the queue to be updated.
         """
         time_of_update = datetime.now()
 
-        self.queues_update_time[queue_name] = time_of_update
+        self.queues_update_time[app_name][queue_name] = time_of_update
         self.storage.set(
             settings.REDIS_UPDATE_TIMES, pickle.dumps(self.queues_update_time)
         )
 
     def compute_consumers_count(
-        self, queue: Queue
+        self, app: str, queue: Queue
     ) -> Tuple[Optional[int], Optional[str]]:
         """
         Computes the count of the consumers which should be used for a queue, given its stats and the configuration.
 
+        :param app: The app in which the queue resides.
         :param queue: The queue for which the consumers count should be calculated.
         :return:
             None
@@ -75,9 +77,9 @@ class ConsumerUpdatesCoordinator:
         """
         LOGGER.info("Computing the consumers count.", queue=queue)
 
-        last_update = self.queues_update_time.get(queue.queue_name)
+        last_update = self.queues_update_time[app].get(queue.queue_name)
 
-        queue_config = self.config.queues[queue.queue_name]
+        queue_config = self.config.apps[app].queues[queue.queue_name]
 
         if last_update is not None:
             time_since_update = datetime.now() - last_update
@@ -105,5 +107,5 @@ class ConsumerUpdatesCoordinator:
             )
             return None, None
 
-        self._update_time(queue.queue_name)
+        self._update_time(app, queue.queue_name)
         return consumers_for_interval, queue_config.consumers_formation_name

@@ -1,7 +1,7 @@
 import pytest
 
 from rectifier import settings
-from rectifier.config import Config, CoordinatorConfig, QueueConfig
+from rectifier.config import Config, CoordinatorConfig, QueueConfig, AppConfig
 
 from .rabbitmq_mock import RabbitMQAPIMock
 
@@ -10,32 +10,25 @@ class TestableEnv:
     """Wrapper for providing mocked services and default
     test-able configuration."""
 
-    DEFAULT_BALANCER_GROUP = 'mybalancer'
-    DEFAULT_BALANCER = 'myworker'
-    DEFAULT_QUEUE = 'myqueue'
-    DEFAULT_VHOST = 'myvhost'
-
     def __init__(self):
         self.rabbitmq = RabbitMQAPIMock()
 
-        queues = dict(
-            queue=QueueConfig(
-                intervals=[1, 10, 20, 30],
-                workers=[1, 5, 50, 500],
-                cooldown=600,
-                queue_name='queue',
-                consumers_formation_name='worker_queue',
+        apps = dict(
+            rectifier=AppConfig(
+                dict(
+                    queue=QueueConfig(
+                        intervals=[1, 10, 20, 30],
+                        workers=[1, 5, 50, 500],
+                        cooldown=600,
+                        queue_name='queue',
+                        consumers_formation_name='worker_queue',
+                    )
+                )
             )
         )
 
-        coordinator_config = CoordinatorConfig(queues=queues)
+        coordinator_config = CoordinatorConfig(apps=apps)
         self.config = Config(coordinator_config=coordinator_config)
-
-    @property
-    def default_vhost(self):
-        """Gets a reference to the default RabbitMQ virtual host."""
-
-        return self.rabbitmq.vhosts[self.DEFAULT_VHOST]
 
     def start(self):
         """Starts the test-able environment."""
@@ -47,6 +40,10 @@ class TestableEnv:
 
         self.rabbitmq.stop()
 
+    def rabbit_mq_uri(self, app):
+        host = '%s:%s' % (self.rabbitmq.host, self.rabbitmq.port)
+        return 'amqp://%s:%s@%s/%s' % ('guest', 'guest', host, app)
+
 
 @pytest.fixture(scope='function')
 def env():
@@ -56,13 +53,6 @@ def env():
 
     env = TestableEnv()
     env.start()
-    settings.RABBIT_MQ.update(
-        host='%s:%s' % (env.rabbitmq.host, env.rabbitmq.port),
-        vhost=env.DEFAULT_VHOST,
-        user='',
-        password='',
-        secure=False,
-    )
-
+    settings.RABBIT_MQ_SECURE = False
     yield env
     env.stop()

@@ -1,4 +1,3 @@
-import time
 from typing import Optional
 
 import structlog
@@ -76,24 +75,28 @@ class Rectifier:
         if not self.consumer_updates_coordinator:
             return
 
-        try:
-            queues = self.broker.queues(
-                self.consumer_updates_coordinator.config.queues.keys()
-            )
-        except BrokerError:
-            return
+        for (app, app_config) in self.consumer_updates_coordinator.config.apps.items():
+            queues_config = app_config.queues
 
-        for queue in queues:
-            new_consumer_count, consumer_formation = self.consumer_updates_coordinator.compute_consumers_count(
-                queue
-            )
+            broker_uri = self.infrastructure_provider.broker_uri(app)
 
-            if new_consumer_count is None:
-                continue
+            stats = self.broker.stats(broker_uri)
 
             try:
-                self.infrastructure_provider.scale(
-                    consumer_formation, new_consumer_count
+                queues = self.broker.queues(queues_config.keys(), stats)
+            except BrokerError:
+                return
+
+            for queue in queues:
+                new_consumer_count, consumer_formation = self.consumer_updates_coordinator.compute_consumers_count(
+                    app, queue
                 )
-            except InfrastructureProviderError:
-                pass
+                if new_consumer_count is None:
+                    continue
+
+                try:
+                    self.infrastructure_provider.scale(
+                        app, consumer_formation, new_consumer_count
+                    )
+                except InfrastructureProviderError:
+                    pass
