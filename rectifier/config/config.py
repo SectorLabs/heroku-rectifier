@@ -15,13 +15,15 @@ class QueueConfig:
 
 @dataclass
 class AppConfig:
-    """Configuration for the coordinator."""
+    """Configuration for a single App"""
 
     queues: Dict[str, QueueConfig]
 
 
 @dataclass
 class CoordinatorConfig:
+    """Configuration for the coordinator."""
+
     apps: Dict[str, AppConfig]
 
 

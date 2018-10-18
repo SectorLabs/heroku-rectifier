@@ -15,7 +15,16 @@ LOGGER = structlog.get_logger(__name__)
 
 
 class Heroku(InfrastructureProvider):
+    """A wrapper over the Heroku Platofrm API, providing the capability to scale dynos for given queue names."""
+
     def scale(self, app_name: str, queue_name: str, consumers_count: int) -> None:
+        """
+        Scales dynos.
+
+        :param queue_name: The queue for which the dynos should be scaled.
+        :param consumers_count: The new number of dynos to be used.
+        """
+
         LOGGER.info(
             "Scaling queue %s of app %s to %d consumers"
             % (queue_name, app_name, consumers_count)
@@ -34,6 +43,10 @@ class Heroku(InfrastructureProvider):
             raise InfrastructureProviderError(message)
 
     def broker_uri(self, app_name: str):
+        """
+        Retrieves the broker URI for a given app_name
+        """
+
         try:
             app = self._connection(app_name)
             return app.config()[settings.BROKER_URL_KEY]
