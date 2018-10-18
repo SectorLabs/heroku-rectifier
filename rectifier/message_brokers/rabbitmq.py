@@ -1,13 +1,14 @@
 import json
-from typing import Optional, Dict, List
+from typing import Dict, List
 
 import jsonschema as jsonschema
 import requests
 import structlog
+import pika
 
 import schemas
-from rectifier.queue import Queue
 from rectifier import settings
+from rectifier.queue import Queue
 from .broker import Broker
 
 LOGGER = structlog.get_logger(__name__)
@@ -26,19 +27,21 @@ class RabbitMQ(Broker):
     An wrapper over RabbitMQ. Can fetch data about the queues in real time.
     """
 
-    def __init__(self) -> None:
-        self.config = settings.RABBIT_MQ
-
-    def stats(self):
+    @staticmethod
+    def stats(uri: str):
         """Gets a list of available queues and stat information
         for each available queue."""
 
-        host = self.config.get('host')
-        vhost = self.config.get('vhost')
-        user = self.config.get('user')
-        password = self.config.get('password')
-        protocol = 'https' if self.config.get('secure') else 'http'
+        url_params = pika.URLParameters(uri)
 
+        host = url_params.host
+        if url_params.port and url_params.port != url_params.DEFAULT_PORT:
+            host = '%s:%s' % (host, url_params.port)
+        user = url_params.credentials.username
+        password = url_params.credentials.password
+        vhost = url_params.virtual_host
+
+        protocol = 'https' if settings.RABBIT_MQ_SECURE else 'http'
         url = '%s://%s/api/queues/%s' % (protocol, host, vhost)
 
         auth = requests.auth.HTTPBasicAuth(user, password)
@@ -84,15 +87,11 @@ class RabbitMQ(Broker):
 
         return data
 
-    def queues(
-        self, queue_names: List[str], stats: Optional[Dict] = None
-    ) -> List[Queue]:
-        if stats is None:
-            stats = self.stats()
-
+    @staticmethod
+    def queues(interest_queues: List[str], stats: Dict) -> List[Queue]:
         queues = []
 
-        for queue_name in queue_names:
+        for queue_name in interest_queues:
             queue_list = list(
                 filter(lambda queue_stats: queue_stats['name'] == queue_name, stats)
             )

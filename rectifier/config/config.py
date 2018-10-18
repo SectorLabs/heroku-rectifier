@@ -14,10 +14,15 @@ class QueueConfig:
 
 
 @dataclass
-class CoordinatorConfig:
+class AppConfig:
     """Configuration for the coordinator."""
 
     queues: Dict[str, QueueConfig]
+
+
+@dataclass
+class CoordinatorConfig:
+    apps: Dict[str, AppConfig]
 
 
 @dataclass
@@ -27,4 +32,4 @@ class Config:
     coordinator_config: CoordinatorConfig
 
 
-__all__ = ['QueueConfig', 'CoordinatorConfig', 'Config']
+__all__ = ['QueueConfig', 'CoordinatorConfig', 'AppConfig', 'Config']

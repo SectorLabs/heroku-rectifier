@@ -10,13 +10,9 @@ class Config:
         'required': ['intervals', 'workers', 'cooldown', 'consumers_formation_name'],
     }
 
-    SCHEMA = {
-        'type': 'object',
-        'properties': {
-            'queues': {'type': 'object', 'patternProperties': {".*": QUEUE}}
-        },
-        'required': ['queues'],
-    }
+    APP = {'type': 'object', 'patternProperties': {'.*': QUEUE}}
+
+    SCHEMA = {'type': 'object', 'pattern_properties': {'.*': APP}}
 
 
 __all__ = ['Config']
