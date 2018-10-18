@@ -80,9 +80,8 @@ class Rectifier:
 
             broker_uri = self.infrastructure_provider.broker_uri(app)
 
-            stats = self.broker.stats(broker_uri)
-
             try:
+                stats = self.broker.stats(broker_uri)
                 queues = self.broker.queues(queues_config.keys(), stats)
             except BrokerError:
                 return
