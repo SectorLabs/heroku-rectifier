@@ -115,10 +115,6 @@ The password to be used for basic auth.
 
 The API key rectifier should use for accesing heroku.
 
-> HEROKU_APP_NAME
-
-The app name for which consumers should be scaled.
-
 #### Rectifier
 
 > TIME_BETWEEN_REQUESTS
