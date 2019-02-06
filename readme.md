@@ -1,12 +1,16 @@
-**Rectifier** is an autoscaler. It inspects queues and the traffic they have, and scales the consumers of the queues
-accordingly.
+![](static/favicon.ico)
 
-No fancy logo available.
+**Rectifier** is an simple autoscaler built mainly for Heroku.
+It inspects your queues and the traffic they have, and blindly scales the consumers of the queues accordingly.
+
+It *doesn't* take into consideration things like your DB load, so if you're worried about that, this might not be for you.
+
+Also, you need to host **rectifier** yourself. If you're using Heroku, this is really is as a Procfile is provided.
 
 ## Configuration
 
 You have to configure Rectifier for it to actually do something.
-The configuration is made in two parts:
+The configuration is composed of two parts:
 
 ### Queues Configuration
 
@@ -19,12 +23,12 @@ Rectifier can watch as many queues as needed. An example of configuration looks 
 
 ```json
 {
-    "bayut-development": {
-        "photos": {
+    "app_name": {
+        "queue_name": {
             "intervals": [0, 100, 1000],
             "workers": [1, 2, 3],
             "cooldown": 30,
-            "consumers_formation_name": "worker_photos"
+            "consumers_formation_name": "dyno_formation_name"
         }
     }
 }
@@ -128,3 +132,26 @@ Whether it should use `https` for rabbit MQ http calls.
 > DRY_RUN
 
 If true, the rectifier won't _actually_ scale.
+
+## License
+MIT License
+
+Copyright (c) 2018 Sector Labs
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
