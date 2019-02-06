@@ -1,6 +1,6 @@
 ![](static/favicon.ico)
 
-**Rectifier** is an simple autoscaler built mainly for Heroku.
+**Rectifier** is a simple autoscaler built mainly for Heroku.
 It inspects your queues and the traffic they have, and blindly scales the consumers of the queues accordingly.
 
 It *doesn't* take into consideration things like your DB load, so if you're worried about that, this might not be for you.
