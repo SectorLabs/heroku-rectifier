@@ -1,22 +1,23 @@
 ![](static/favicon.ico)
 
-**Rectifier** is a simple autoscaler built mainly for Heroku.
+**heroku-rectifier** is a simple autoscaler built for Heroku.
 It inspects your queues and the traffic they have, and blindly scales the consumers of the queues accordingly.
+At the moment, **heroku-rectifier** only knows how to inspect RabbitMQ queues.
 
 It *doesn't* take into consideration things like your DB load, so if you're worried about that, this might not be for you.
 
-Also, you need to host **rectifier** yourself. If you're using Heroku, this is really is as a Procfile is provided.
+Also, you need to host **heroku-rectifier** yourself. If you're using Heroku, this is really easy, as a Procfile is provided.
 
 ## Configuration
 
-You have to configure Rectifier for it to actually do something.
+You have to configure heroku-rectifier for it to actually do something.
 The configuration is composed of two parts:
 
 ### Queues Configuration
 
 This is made through a Flask endpoint ('/').
 
-How often and how Rectifier should update consumers, based on the queues stats, is configured
+How often and how heroku-rectifier should update consumers, based on the queues stats, is configured
 through a JSON file, editable at this endpoint.
 
 Rectifier can watch as many queues as needed. An example of configuration looks like this:
