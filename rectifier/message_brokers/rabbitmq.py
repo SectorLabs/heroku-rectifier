@@ -99,7 +99,7 @@ class RabbitMQ(Broker):
             if len(queue_list) != 1:
                 message = 'Could not find such a queue name'
                 LOGGER.error(message, response=stats, queue_name=queue_name)
-                raise BrokerError(message)
+                continue
 
             queue = queue_list[0]
 
