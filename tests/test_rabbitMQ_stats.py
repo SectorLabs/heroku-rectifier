@@ -38,3 +38,15 @@ def test_get_current_load(config, interest_queues, output, env):
     )
     for queue in output:
         assert queue in interest_queues
+
+
+def test_get_current_load_missing_queue(env):
+    """Tests whether trying to stats for a queue
+    that doesn't exists doesn't make things crash."""
+
+    interest_queues = RabbitMQ.queues(
+        ["byebyequeue"],
+        RabbitMQ.stats(env.rabbit_mq_uri(app='myapp')),
+    )
+
+    assert len(interest_queues) == 0
