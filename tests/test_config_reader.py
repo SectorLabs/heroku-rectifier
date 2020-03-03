@@ -183,6 +183,27 @@ def test_config_reader():
                 }
             }
         ),
+        (
+            {
+                'rectifier': {
+                    'q1': {
+                        'intervals': [0, 1, 30],
+                        'workers': [1, 5, 500],
+                        'cooldown': 1,
+                        # No additional properties allowed
+                        'additionalProp': False,
+                    }
+                }
+            }
+        ),
+        (
+            {
+                'app': {
+                    # Totally invalid queue config
+                    'bla': {'bla': False}
+                }
+            },
+        ),
     ],
 )
 def test_invalid_queue_configurations(config):
