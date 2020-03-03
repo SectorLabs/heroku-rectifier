@@ -1,9 +1,13 @@
+import os
+import sys
 import threading
 import json
 import time
+import traceback
+
+import structlog
 
 from flask import Flask, render_template, request, redirect, url_for, flash
-import structlog
 from flask_basicauth import BasicAuth
 
 from rectifier.config import ConfigParser, ConfigReadError
@@ -73,8 +77,21 @@ class WebThread(threading.Thread):
         app.run()
 
 
-rectifier = RectifierThread()
-rectifier.start()
+def on_uncaught_exception(args):
+    err_type, err_value, err_tb, thread = args
+    sys.stderr.write("".join(traceback.format_exception(err_type, err_value, err_tb)))
+
+    # do not replace with sys.exit(..), from docs, this quits
+    # without waiting unlike sys.exit(..)
+    os._exit(1)
+
 
 if __name__ == '__main__':
+    # unhandled exceptions raised in threads are caught
+    # by the hook and cause the whole process to exit
+    threading.excepthook = on_uncaught_exception
+
+    rectifier = RectifierThread()
+    rectifier.start()
+
     app.run(host=settings.HOST, port=settings.PORT)
