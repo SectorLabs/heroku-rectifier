@@ -4,6 +4,7 @@ import threading
 import json
 import time
 import traceback
+import errno
 
 import structlog
 
@@ -83,15 +84,17 @@ def on_uncaught_exception(args):
 
     # do not replace with sys.exit(..), from docs, this quits
     # without waiting unlike sys.exit(..)
-    os._exit(1)
+    # exit code must be EINTR for gunicorn to quit
+    os._exit(errno.EINTR)
+
+
+# unhandled exceptions raised in threads are caught
+# by the hook and cause the whole process to exit
+threading.excepthook = on_uncaught_exception  # type: ignore
+
+rectifier = RectifierThread()
+rectifier.start()
 
 
 if __name__ == '__main__':
-    # unhandled exceptions raised in threads are caught
-    # by the hook and cause the whole process to exit
-    threading.excepthook = on_uncaught_exception # type: ignore
-
-    rectifier = RectifierThread()
-    rectifier.start()
-
     app.run(host=settings.HOST, port=settings.PORT)
