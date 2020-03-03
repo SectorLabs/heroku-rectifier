@@ -1,5 +1,7 @@
 ![](static/favicon.ico)
 
+[![CircleCI](https://circleci.com/gh/SectorLabs/heroku-rectifier/tree/master.svg?style=svg)](https://circleci.com/gh/SectorLabs/heroku-rectifier/tree/master)
+
 **heroku-rectifier** is a simple autoscaler built for Heroku.
 It inspects your queues and the traffic they have, and blindly scales the consumers of the queues accordingly.
 At the moment, **heroku-rectifier** only knows how to inspect RabbitMQ queues.

@@ -8,11 +8,20 @@ class Config:
             'consumers_formation_name': {'type': 'string'},
         },
         'required': ['intervals', 'workers', 'cooldown', 'consumers_formation_name'],
+        'additionalProperties': False,
     }
 
-    APP = {'type': 'object', 'patternProperties': {'.*': QUEUE}}
+    APP = {
+        'type': 'object',
+        'patternProperties': {'.*': QUEUE},
+        'additionalProperties': False,
+    }
 
-    SCHEMA = {'type': 'object', 'pattern_properties': {'.*': APP}}
+    SCHEMA = {
+        'type': 'object',
+        'patternProperties': {'.*': APP},
+        'additionalProperties': False,
+    }
 
 
 __all__ = ['Config']
