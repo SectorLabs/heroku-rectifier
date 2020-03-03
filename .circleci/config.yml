@@ -1,0 +1,19 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.8.2
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: pip install -r requirements.txt
+      - run:
+          name: Verify formatting
+          command: black . -S
+      - run:
+          name: Type check
+          command: mypy .
+      - run:
+          name: Run tests
+          command: py.test --cov=rectifier
