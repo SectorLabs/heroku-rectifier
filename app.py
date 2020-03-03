@@ -89,7 +89,7 @@ def on_uncaught_exception(args):
 if __name__ == '__main__':
     # unhandled exceptions raised in threads are caught
     # by the hook and cause the whole process to exit
-    threading.excepthook = on_uncaught_exception
+    threading.excepthook = on_uncaught_exception # type: ignore
 
     rectifier = RectifierThread()
     rectifier.start()
