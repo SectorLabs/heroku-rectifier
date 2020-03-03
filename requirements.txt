@@ -38,6 +38,6 @@ six==1.11.0
 structlog==18.2.0
 toml==0.10.0
 tzlocal==1.5.1
-urllib3==1.23
+urllib3==1.24.2
 Werkzeug==1.0.0
 typed-ast==1.4.1
