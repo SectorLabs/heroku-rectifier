@@ -2,12 +2,18 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-        <script src="https://unpkg.com/codeflask@1.4.0/build/codeflask.min.js"></script>
-        <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/8.6.6/jsoneditor.css" rel="stylesheet"
+              type="text/css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/8.6.6/jsoneditor.min.js"></script>
+        <link href="https://fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
         <title>Rectifier</title>
         <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     </head>
     <style>
+        :root {
+            --color: #29ace1;
+        }
+
         .container {
             width: 100%;
             justify-content: center;
@@ -15,25 +21,20 @@
 
         #code {
             position: relative;
-            width: 50rem;
-            height: 35rem;
-
-            border: 1px solid dimgrey;
+            width: 100%;
+            height: calc(100vh - 180px);
         }
 
         body {
+            margin: 0;
             font-family: Raleway;
             font-weight: lighter;
             color: #444;
-            padding: 1rem 5rem 5rem;
+            padding: 16px 32px 16px;
         }
 
         form {
-            margin-top: 1rem;
-        }
-
-        #statusIndicator {
-            font-weight: normal;
+            margin-top: 8px;
         }
 
         #submit {
@@ -47,15 +48,15 @@
             text-transform: uppercase;
             text-decoration: none;
             white-space: nowrap;
-            background-color: #41ad8f;
+            background-color: var(--color);
             border-radius: 4px;
-            border: 1px solid lightseagreen;
+            border: 1px solid var(--color);
             cursor: pointer;
             box-sizing: border-box
         }
 
         #submit:hover {
-            background-color: #38876C;
+            filter: brightness(90%);
         }
 
         #submit:disabled {
@@ -63,32 +64,55 @@
             cursor: not-allowed;
         }
 
-        .status {
-            margin-top: 1rem;
-        }
-
         .flashes {
             margin-top: 1rem;
             margin-bottom: 1rem;
-            background-color: rgba(121, 238, 156, 0.52);
-            border: 1px solid green;
-            padding: 10px;
-            width: 48rem;
+            width: 100%;
             border-radius: 5px;
+            color: limegreen;
             font-weight: bold;
         }
 
         .flashes.error {
-            background-color: lightpink;
-            border: 1px solid red;
+            color: red;
         }
 
+        img {
+            width: 16px;
+            height: 16px;
+            display: inline-block;
+        }
+
+        h1 {
+            display: inline-block;
+            font-size: 24px;
+            margin: 0 8px 0 0;
+        }
+
+        .heading {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .jsoneditor {
+            border: 1px solid var(--color);
+        }
+
+        .jsoneditor-menu {
+            background-color: var(--color);
+            border: 1px solid var(--color);
+        }
+
+        button.jsoneditor-selected {
+            background-color: var(--color) !important;
+        }
     </style>
     <body>
-        <div>
+        <div class="heading">
             <h1>Rectifier</h1>
+            <img alt="logo" src="{{ url_for('static', filename='favicon.ico') }}">
         </div>
-        <h2>Configuration:</h2>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -99,25 +123,15 @@
             {% endif %}
         {% endwith %}
         <div class="container">
-            <div id="code" name="code">{{ config|safe }}</div>
-            <div class="status">
-                <span id="statusIndicator"></span>
-
-                <form name="configForm" action="{{ url_for('submit_configuration') }}" method="post">
-                    <input type="hidden" name="code" id="code">
-                    <input type="submit" id="submit">
-                </form>
-            </div>
+            <div id="code" name="code"></div>
+            <form name="configForm" action="{{ url_for('submit_configuration') }}" method="post">
+                <input type="hidden" name="code" id="code">
+                <input type="submit" id="submit">
+            </form>
         </div>
 
         <script type="text/javascript">
-            const flask = new CodeFlask('#code', {
-                language: 'js',
-                lineNumbers: true,
-                tabSize: 4
-            });
-
-            flask.onUpdate((code) => {
+            const onChangeText = (code) => {
                 let isJSONValid = false;
 
                 try {
@@ -125,13 +139,19 @@
                     isJSONValid = true;
                 } catch {}
 
-                const statusIndicator = document.getElementById('statusIndicator');
-                statusIndicator.innerText = isJSONValid ? "Valid JSON" : "Invalid JSON";
-                statusIndicator.style.color = isJSONValid ? 'green' : 'red';
-
                 document.configForm.code.value = code;
                 document.configForm.submit.disabled = !isJSONValid;
+            };
+
+            const container = document.getElementById("code");
+            const editor = new JSONEditor(container, {
+                onChangeText,
+                modes: ['code', 'tree'],
+                mode: 'code',
             });
+
+            editor.set({{  config|safe }});
+            document.configForm.code.value = editor.getText();
         </script>
 
     </body>
