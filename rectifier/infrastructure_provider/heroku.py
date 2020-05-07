@@ -10,6 +10,7 @@ from rectifier.infrastructure_provider import (
 )
 
 from rectifier import settings
+from rectifier.get_random_key import get_random_key
 
 LOGGER = structlog.get_logger(__name__)
 
@@ -58,8 +59,13 @@ class Heroku(InfrastructureProvider):
     @staticmethod
     def _connection(app_name: str) -> HerokuApp:
         """Gets a connection to Heroku."""
+        key = get_random_key(settings.HEROKU_API_KEYS)
+        if not key:
+            message = 'No API key set'
+            LOGGER.error('No API key set')
+            raise InfrastructureProviderError(message)
 
-        conn = heroku3.from_key(settings.HEROKU_API_KEY)
+        conn = heroku3.from_key(get_random_key(settings.HEROKU_API_KEYS))
         apps = conn.apps()
 
         if app_name not in apps:
