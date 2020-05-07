@@ -1,5 +1,6 @@
 import pickle
 from collections import defaultdict
+from typing import Dict
 
 from freezegun import freeze_time
 
@@ -18,8 +19,10 @@ class InfrastructureProviderMock(InfrastructureProvider):
         self.called_count = 0
         self.env = env
 
-    def scale(self, app_name: str, queue_name: str, consumers_count: int) -> None:
-        self.consumers[app_name][queue_name] = consumers_count
+    def scale(self, app_name: str, updates: Dict[str, int]) -> None:
+        for queue_name, consumers_count in updates.items():
+            self.consumers[app_name][queue_name] = consumers_count
+
         self.called_count += 1
 
     def broker_uri(self, app_name: str):
