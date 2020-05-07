@@ -1,3 +1,5 @@
+from typing import Dict
+
 import structlog
 import heroku3
 
@@ -18,18 +20,15 @@ LOGGER = structlog.get_logger(__name__)
 class Heroku(InfrastructureProvider):
     """A wrapper over the Heroku Platofrm API, providing the capability to scale dynos for given queue names."""
 
-    def scale(self, app_name: str, queue_name: str, consumers_count: int) -> None:
+    def scale(self, app_name: str, scale_requests: Dict[str, int]) -> None:
         """
         Scales dynos.
 
-        :param queue_name: The queue for which the dynos should be scaled.
-        :param consumers_count: The new number of dynos to be used.
+        :param app_name: The app for which the batch scale request should be made
+        :param scale_requests: What consumers to scale
         """
 
-        LOGGER.info(
-            "Scaling queue %s of app %s to %d consumers"
-            % (queue_name, app_name, consumers_count)
-        )
+        LOGGER.info(f"[{app_name}] Scaling: {scale_requests}")
 
         if settings.DRY_RUN:
             LOGGER.debug('Not pursuing scaling since this is a dry run')
@@ -37,7 +36,7 @@ class Heroku(InfrastructureProvider):
 
         try:
             app = self._connection(app_name)
-            app.scale_formation_process(queue_name, consumers_count)
+            app.batch_scale_formation_processes(scale_requests)
         except HTTPError:
             message = 'Failed to scale.'
             LOGGER.error(message)

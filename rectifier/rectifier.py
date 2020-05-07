@@ -86,16 +86,21 @@ class Rectifier:
             except BrokerError:
                 return
 
+            updates = dict()
             for queue in queues:
                 new_consumer_count, consumer_formation = self.consumer_updates_coordinator.compute_consumers_count(
                     app, queue
                 )
+
                 if new_consumer_count is None:
                     continue
 
-                try:
-                    self.infrastructure_provider.scale(
-                        app, consumer_formation, new_consumer_count
-                    )
-                except InfrastructureProviderError:
-                    pass
+                updates[consumer_formation] = new_consumer_count
+
+            if not updates:
+                continue
+
+            try:
+                self.infrastructure_provider.scale(app, updates)
+            except InfrastructureProviderError:
+                pass
