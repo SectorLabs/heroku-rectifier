@@ -16,6 +16,9 @@ SECRET_KEY = env('SECRET_KEY', 'my-great-secret-key')
 TIME_BETWEEN_REQUESTS = env.int('TIME_BETWEEN_REQUESTS', 30)
 
 HEROKU_API_KEY = env('HEROKU_API_KEY', None)
+HEROKU_API_KEYS = env.list(
+    'HEROKU_API_KEYS', [HEROKU_API_KEY] if HEROKU_API_KEY else []
+)
 
 HOST = env('HOST', '0.0.0.0')
 PORT = env.int('PORT', 80)
