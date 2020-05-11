@@ -14,7 +14,7 @@ Flask-APScheduler==1.10.1
 Flask-BasicAuth==0.2.0
 freezegun==0.3.10
 gunicorn==19.9.0
-heroku3==3.3.0
+heroku3==4.2.1
 idna==2.7
 itsdangerous==0.24
 Jinja2==2.11.1
