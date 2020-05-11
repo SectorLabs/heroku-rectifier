@@ -24,7 +24,7 @@ HEROKU_API_KEYS = env.list(
 )
 
 HOST = env('HOST', '0.0.0.0')
-PORT = env.int('PORT', 3008)
+PORT = env.int('PORT', 80)
 
 BASIC_AUTH_USER = env('BASIC_AUTH_USER', 'guest')
 BASIC_AUTH_PASSWORD = env('BASIC_AUTH_PASSWORD', 'guest')

@@ -91,14 +91,8 @@ class Rectifier:
 
             updates = dict()
             for queue in queues:
-                if app_config.mode == AppMode.KILL:
-                    updates[
-                        queues_config[queue.queue_name].consumers_formation_name
-                    ] = 0
-                    continue
-
                 new_consumer_count, consumer_formation = self.consumer_updates_coordinator.compute_consumers_count(
-                    app, queue
+                    app, app_config.mode, queue
                 )
 
                 if new_consumer_count is None:

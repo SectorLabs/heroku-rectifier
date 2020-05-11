@@ -159,6 +159,34 @@ def test_monitor_paused(env, mode, expected_called_count, expected_workers):
     )
 
 
+def test_kill_only_calls_when_needed(env):
+    storage = RedisStorageMock()
+    infrastructure_provider = InfrastructureProviderMock(env)
+
+    config = f'{{"rectifier":{{"mode": "kill", "q1":{{"intervals":[0,10,100],"workers":[1,2,3],"cooldown":60,"consumers_formation_name":"worker_q1"}}}}}}'
+    storage.set(settings.REDIS_CONFIG_KEY, bytes(config, 'utf-8'))
+
+    rectifier = Rectifier(
+        broker=RabbitMQ(),
+        storage=storage,
+        infrastructure_provider=infrastructure_provider,
+    )
+
+    rectifier.run()
+    assert infrastructure_provider.called_count == 0
+    assert infrastructure_provider.consumers['rectifier']['worker_q1'] == 0
+
+    env.rabbitmq.set_queue('rectifier', 'q1', 10, 200)
+    rectifier.run()
+    assert infrastructure_provider.called_count == 1
+    assert infrastructure_provider.consumers['rectifier']['worker_q1'] == 0
+
+    env.rabbitmq.set_queue('rectifier', 'q1', 0, 200)
+    rectifier.run()
+    assert infrastructure_provider.called_count == 1
+    assert infrastructure_provider.consumers['rectifier']['worker_q1'] == 0
+
+
 def test_monitor_with_no_config(env):
     storage = RedisStorageMock()
     infrastructure_provider = InfrastructureProviderMock(env)

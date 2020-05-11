@@ -6,7 +6,7 @@ from typing import DefaultDict, Dict, Optional, Tuple
 
 import structlog
 
-from rectifier.config import CoordinatorConfig
+from rectifier.config import CoordinatorConfig, AppMode
 from rectifier.queue import Queue
 from rectifier.storage import Storage
 from rectifier import settings
@@ -60,7 +60,7 @@ class ConsumerUpdatesCoordinator:
         )
 
     def compute_consumers_count(
-        self, app: str, queue: Queue
+        self, app: str, app_mode: AppMode, queue: Queue
     ) -> Tuple[Optional[int], Optional[str]]:
         """
         Computes the count of the consumers which should be used for a queue, given its stats and the configuration.
@@ -89,6 +89,12 @@ class ConsumerUpdatesCoordinator:
                     timedelta=time_since_update.seconds,
                 )
                 return None, None
+
+        if app_mode == AppMode.KILL:
+            return (
+                0 if queue.consumers_count else None,
+                queue_config.consumers_formation_name,
+            )
 
         matching_interval_index = [
             i
