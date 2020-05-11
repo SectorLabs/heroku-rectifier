@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import Enum
 from typing import List, Dict
 
 
@@ -13,11 +14,18 @@ class QueueConfig:
     consumers_formation_name: str
 
 
+class AppMode(Enum):
+    SCALE = 'scale'
+    NOOP = 'noop'
+    KILL = 'kill'
+
+
 @dataclass
 class AppConfig:
     """Configuration for a single App"""
 
     queues: Dict[str, QueueConfig]
+    mode: AppMode
 
 
 @dataclass
@@ -34,4 +42,4 @@ class Config:
     coordinator_config: CoordinatorConfig
 
 
-__all__ = ['QueueConfig', 'CoordinatorConfig', 'AppConfig', 'Config']
+__all__ = ['QueueConfig', 'CoordinatorConfig', 'AppConfig', 'Config', 'AppMode']

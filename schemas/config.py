@@ -13,8 +13,10 @@ class Config:
 
     APP = {
         'type': 'object',
-        'patternProperties': {'.*': QUEUE},
-        'additionalProperties': False,
+        'patternProperties': {
+            '^(?!mode).*$': QUEUE,
+            '^mode$': {'type': 'string', 'enum': ['scale', 'noop', 'kill']},
+        },
     }
 
     SCHEMA = {

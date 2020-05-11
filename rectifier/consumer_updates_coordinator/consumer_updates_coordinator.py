@@ -75,8 +75,6 @@ class ConsumerUpdatesCoordinator:
             Otherwise
                 - the number of consumers which should be used for this queue.
         """
-        LOGGER.info("Computing the consumers count.", queue=queue)
-
         last_update = self.queues_update_time[app].get(queue.queue_name)
 
         queue_config = self.config.apps[app].queues[queue.queue_name]
@@ -101,10 +99,6 @@ class ConsumerUpdatesCoordinator:
         consumers_for_interval = queue_config.workers[matching_interval_index]
 
         if queue.consumers_count == consumers_for_interval:
-            LOGGER.info(
-                "Nothing to do. Queue has the proper consumer count.",
-                consumer_cont=queue.consumers_count,
-            )
             return None, None
 
         self._update_time(app, queue.queue_name)

@@ -3,7 +3,7 @@ from typing import Optional
 import structlog
 
 from rectifier import settings
-from rectifier.config import ConfigParser
+from rectifier.config import ConfigParser, AppMode
 from rectifier.consumer_updates_coordinator import ConsumerUpdatesCoordinator
 from rectifier.infrastructure_provider import (
     InfrastructureProvider,
@@ -76,6 +76,9 @@ class Rectifier:
             return
 
         for (app, app_config) in self.consumer_updates_coordinator.config.apps.items():
+            if app_config.mode == AppMode.NOOP:
+                continue
+
             queues_config = app_config.queues
 
             broker_uri = self.infrastructure_provider.broker_uri(app)
@@ -88,6 +91,12 @@ class Rectifier:
 
             updates = dict()
             for queue in queues:
+                if app_config.mode == AppMode.KILL:
+                    updates[
+                        queues_config[queue.queue_name].consumers_formation_name
+                    ] = 0
+                    continue
+
                 new_consumer_count, consumer_formation = self.consumer_updates_coordinator.compute_consumers_count(
                     app, queue
                 )

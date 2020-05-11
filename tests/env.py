@@ -1,7 +1,7 @@
 import pytest
 
 from rectifier import settings
-from rectifier.config import Config, CoordinatorConfig, QueueConfig, AppConfig
+from rectifier.config import Config, CoordinatorConfig, QueueConfig, AppConfig, AppMode
 
 from .rabbitmq_mock import RabbitMQAPIMock
 
@@ -15,7 +15,8 @@ class TestableEnv:
 
         apps = dict(
             rectifier=AppConfig(
-                dict(
+                mode=AppMode.SCALE,
+                queues=dict(
                     queue=QueueConfig(
                         intervals=[1, 10, 20, 30],
                         workers=[1, 5, 50, 500],
@@ -23,7 +24,7 @@ class TestableEnv:
                         queue_name='queue',
                         consumers_formation_name='worker_queue',
                     )
-                )
+                ),
             )
         )
 

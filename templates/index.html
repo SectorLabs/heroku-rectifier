@@ -130,7 +130,10 @@
             </form>
         </div>
 
+        <script src="{{ url_for('static', filename='schema.js') }}"></script>
         <script type="text/javascript">
+            let errors = [];
+
             const onChangeText = (code) => {
                 let isJSONValid = false;
 
@@ -140,7 +143,12 @@
                 } catch {}
 
                 document.configForm.code.value = code;
-                document.configForm.submit.disabled = !isJSONValid;
+                document.configForm.submit.disabled = !isJSONValid || errors.length > 0;
+            };
+
+            const onValidationError = (newErrors) => {
+                errors = newErrors;
+                document.configForm.submit.disabled = errors.length > 0;
             };
 
             const container = document.getElementById("code");
@@ -148,6 +156,8 @@
                 onChangeText,
                 modes: ['code', 'tree'],
                 mode: 'code',
+                schema: window.schema,
+                onValidationError,
             });
 
             editor.set({{  config|safe }});
