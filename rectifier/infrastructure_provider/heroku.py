@@ -37,9 +37,9 @@ class Heroku(InfrastructureProvider):
         try:
             app = self._connection(app_name)
             app.batch_scale_formation_processes(scale_requests)
-        except HTTPError:
+        except HTTPError as e:
             message = 'Failed to scale.'
-            LOGGER.error(message)
+            LOGGER.error(message, error=e)
             raise InfrastructureProviderError(message)
 
     def broker_uri(self, app_name: str):
@@ -50,9 +50,9 @@ class Heroku(InfrastructureProvider):
         try:
             app = self._connection(app_name)
             return app.config()[settings.BROKER_URL_KEY]
-        except HTTPError:
+        except HTTPError as e:
             message = 'Cannot retrieve the broker uri.'
-            LOGGER.error(message)
+            LOGGER.error(message, error=e)
             raise InfrastructureProviderError(message)
 
     @staticmethod
