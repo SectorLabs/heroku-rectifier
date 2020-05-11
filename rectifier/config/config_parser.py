@@ -83,9 +83,9 @@ class ConfigParser:
             app_mode = config.get('mode', AppMode.SCALE.value)
             try:
                 AppMode(app_mode)
-            except ValueError:
-                message = f'Improper value for app mode: {app_mode}'
-                raise ConfigReadError(message)
+            except ValueError as err:
+                message = f'Improper value for app mode: {app_mode}. Possible values: {[mode.value for mode in AppMode]}'
+                raise ConfigReadError(message) from err
 
             for (queue_name, queue_properties) in cls._queue_configs(config):
                 intervals = queue_properties['intervals']
