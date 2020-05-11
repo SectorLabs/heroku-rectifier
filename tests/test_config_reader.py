@@ -7,13 +7,14 @@ from rectifier.config import (
     CoordinatorConfig,
     QueueConfig,
 )
-from rectifier.config.config import AppConfig
+from rectifier.config.config import AppConfig, AppMode
 from tests.redis_mock import RedisStorageMock
 
 
 def test_config_reader_dict_parsing():
     config = {
         'rectifier': {
+            'mode': 'noop',
             'q1': {
                 'intervals': [0, 10, 20, 30],
                 'workers': [1, 5, 50, 500],
@@ -40,6 +41,7 @@ def test_config_reader_dict_parsing():
         coordinator_config=CoordinatorConfig(
             apps=dict(
                 rectifier=AppConfig(
+                    mode=AppMode.NOOP,
                     queues=dict(
                         q1=QueueConfig(
                             intervals=[0, 10, 20, 30],
@@ -55,9 +57,10 @@ def test_config_reader_dict_parsing():
                             queue_name='q2',
                             consumers_formation_name='q2w',
                         ),
-                    )
+                    ),
                 ),
                 rectifier2=AppConfig(
+                    mode=AppMode.SCALE,
                     queues=dict(
                         q3=QueueConfig(
                             intervals=[0, 10, 11, 12],
@@ -66,7 +69,7 @@ def test_config_reader_dict_parsing():
                             queue_name='q3',
                             consumers_formation_name='q3w',
                         )
-                    )
+                    ),
                 ),
             )
         )
@@ -83,6 +86,7 @@ def test_config_reader():
         coordinator_config=CoordinatorConfig(
             apps=dict(
                 rectifier=AppConfig(
+                    mode=AppMode.SCALE,
                     queues=dict(
                         q1=QueueConfig(
                             intervals=[0, 10, 20, 30],
@@ -91,9 +95,10 @@ def test_config_reader():
                             queue_name='q1',
                             consumers_formation_name='worker_rectifier',
                         )
-                    )
+                    ),
                 ),
                 rectifier2=AppConfig(
+                    mode=AppMode.SCALE,
                     queues=dict(
                         q21=QueueConfig(
                             intervals=[0, 10, 22, 85],
@@ -102,7 +107,7 @@ def test_config_reader():
                             queue_name='q21',
                             consumers_formation_name='worker_rectifier2',
                         )
-                    )
+                    ),
                 ),
             )
         )

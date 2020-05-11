@@ -45,8 +45,7 @@ def test_get_current_load_missing_queue(env):
     that doesn't exists doesn't make things crash."""
 
     interest_queues = RabbitMQ.queues(
-        ["byebyequeue"],
-        RabbitMQ.stats(env.rabbit_mq_uri(app='myapp')),
+        ["byebyequeue"], RabbitMQ.stats(env.rabbit_mq_uri(app='myapp'))
     )
 
     assert len(interest_queues) == 0

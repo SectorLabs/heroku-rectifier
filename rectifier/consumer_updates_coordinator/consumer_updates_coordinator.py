@@ -6,7 +6,7 @@ from typing import DefaultDict, Dict, Optional, Tuple
 
 import structlog
 
-from rectifier.config import CoordinatorConfig
+from rectifier.config import CoordinatorConfig, AppMode
 from rectifier.queue import Queue
 from rectifier.storage import Storage
 from rectifier import settings
@@ -60,7 +60,7 @@ class ConsumerUpdatesCoordinator:
         )
 
     def compute_consumers_count(
-        self, app: str, queue: Queue
+        self, app: str, app_mode: AppMode, queue: Queue
     ) -> Tuple[Optional[int], Optional[str]]:
         """
         Computes the count of the consumers which should be used for a queue, given its stats and the configuration.
@@ -75,8 +75,6 @@ class ConsumerUpdatesCoordinator:
             Otherwise
                 - the number of consumers which should be used for this queue.
         """
-        LOGGER.info("Computing the consumers count.", queue=queue)
-
         last_update = self.queues_update_time[app].get(queue.queue_name)
 
         queue_config = self.config.apps[app].queues[queue.queue_name]
@@ -92,6 +90,12 @@ class ConsumerUpdatesCoordinator:
                 )
                 return None, None
 
+        if app_mode == AppMode.KILL:
+            return (
+                0 if queue.consumers_count else None,
+                queue_config.consumers_formation_name,
+            )
+
         matching_interval_index = [
             i
             for (i, messages_count) in enumerate(queue_config.intervals)
@@ -101,10 +105,6 @@ class ConsumerUpdatesCoordinator:
         consumers_for_interval = queue_config.workers[matching_interval_index]
 
         if queue.consumers_count == consumers_for_interval:
-            LOGGER.info(
-                "Nothing to do. Queue has the proper consumer count.",
-                consumer_cont=queue.consumers_count,
-            )
             return None, None
 
         self._update_time(app, queue.queue_name)
