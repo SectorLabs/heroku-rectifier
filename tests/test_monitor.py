@@ -1,3 +1,4 @@
+import pytest
 import pickle
 from collections import defaultdict
 from typing import Dict
@@ -5,6 +6,7 @@ from typing import Dict
 from freezegun import freeze_time
 
 from rectifier import settings
+from rectifier.config import AppMode
 from rectifier.infrastructure_provider import InfrastructureProvider
 from rectifier.message_brokers import RabbitMQ
 from rectifier.rectifier import Rectifier
@@ -125,6 +127,64 @@ def test_monitor(env):
         assert infrastructure_provider.called_count == 7
         assert infrastructure_provider.consumers['rectifier']['worker_q1'] == 1
         assert infrastructure_provider.consumers['rectifier2']['worker_q2'] == 2
+
+
+@pytest.mark.parametrize(
+    'mode, expected_called_count, expected_workers',
+    [
+        (AppMode.SCALE.value, 1, 3),
+        (AppMode.KILL.value, 1, 0),
+        (AppMode.NOOP.value, 0, 0),
+    ],
+)
+def test_monitor_paused(env, mode, expected_called_count, expected_workers):
+    storage = RedisStorageMock()
+    infrastructure_provider = InfrastructureProviderMock(env)
+
+    config = f'{{"rectifier":{{"mode": "{mode}", "q1":{{"intervals":[0,10,100],"workers":[1,2,3],"cooldown":60,"consumers_formation_name":"worker_q1"}}}}}}'
+    storage.set(settings.REDIS_CONFIG_KEY, bytes(config, 'utf-8'))
+
+    rectifier = Rectifier(
+        broker=RabbitMQ(),
+        storage=storage,
+        infrastructure_provider=infrastructure_provider,
+    )
+
+    env.rabbitmq.set_queue('rectifier', 'q1', 10, 200)
+    rectifier.run()
+
+    assert infrastructure_provider.called_count == expected_called_count
+    assert (
+        infrastructure_provider.consumers['rectifier']['worker_q1'] == expected_workers
+    )
+
+
+def test_kill_only_calls_when_needed(env):
+    storage = RedisStorageMock()
+    infrastructure_provider = InfrastructureProviderMock(env)
+
+    config = f'{{"rectifier":{{"mode": "kill", "q1":{{"intervals":[0,10,100],"workers":[1,2,3],"cooldown":60,"consumers_formation_name":"worker_q1"}}}}}}'
+    storage.set(settings.REDIS_CONFIG_KEY, bytes(config, 'utf-8'))
+
+    rectifier = Rectifier(
+        broker=RabbitMQ(),
+        storage=storage,
+        infrastructure_provider=infrastructure_provider,
+    )
+
+    rectifier.run()
+    assert infrastructure_provider.called_count == 0
+    assert infrastructure_provider.consumers['rectifier']['worker_q1'] == 0
+
+    env.rabbitmq.set_queue('rectifier', 'q1', 10, 200)
+    rectifier.run()
+    assert infrastructure_provider.called_count == 1
+    assert infrastructure_provider.consumers['rectifier']['worker_q1'] == 0
+
+    env.rabbitmq.set_queue('rectifier', 'q1', 0, 200)
+    rectifier.run()
+    assert infrastructure_provider.called_count == 1
+    assert infrastructure_provider.consumers['rectifier']['worker_q1'] == 0
 
 
 def test_monitor_with_no_config(env):

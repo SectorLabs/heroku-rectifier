@@ -6,7 +6,7 @@ import jsonschema
 import structlog
 
 import schemas
-from rectifier.config import Config, AppConfig, QueueConfig, CoordinatorConfig
+from rectifier.config import Config, AppConfig, QueueConfig, CoordinatorConfig, AppMode
 from rectifier.storage.storage import Storage
 from rectifier import settings
 
@@ -49,15 +49,16 @@ class ConfigParser:
         cls.validate(data)
 
         apps = dict()
-        for (app, queues_config) in data.items():
+        for (app, config) in data.items():
             queues = dict()
 
-            for (queue_name, queue_properties) in queues_config.items():
+            mode = AppMode(config.get('mode', AppMode.SCALE.value))
+            for (queue_name, queue_properties) in cls._queue_configs(config):
                 queues[queue_name] = QueueConfig(
                     queue_name=queue_name, **queue_properties
                 )
 
-            apps[app] = AppConfig(queues=queues)
+            apps[app] = AppConfig(queues=queues, mode=mode)
 
         return Config(coordinator_config=CoordinatorConfig(apps=apps))
 
@@ -78,8 +79,15 @@ class ConfigParser:
             LOGGER.error(message, config=data, err=err)
             raise ConfigReadError(message) from err
 
-        for (app, queues) in data.items():
-            for (queue_name, queue_properties) in queues.items():
+        for (app, config) in data.items():
+            app_mode = config.get('mode', AppMode.SCALE.value)
+            try:
+                AppMode(app_mode)
+            except ValueError as err:
+                message = f'Improper value for app mode: {app_mode}. Possible values: {[mode.value for mode in AppMode]}'
+                raise ConfigReadError(message) from err
+
+            for (queue_name, queue_properties) in cls._queue_configs(config):
                 intervals = queue_properties['intervals']
                 workers = queue_properties['workers']
                 cooldown = queue_properties['cooldown']
@@ -117,3 +125,7 @@ class ConfigParser:
                     message = 'The intervals should be sorted in ascending order.'
                     LOGGER.error(message, intervals=intervals, queue_name=queue_name)
                     raise ConfigReadError(message)
+
+    @staticmethod
+    def _queue_configs(app_config: Dict):
+        return ((k, v) for (k, v) in app_config.items() if k != 'mode')
