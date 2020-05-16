@@ -251,3 +251,47 @@ def test_update_time_storage(env):
         assert infrastructure_provider.consumers['rectify']['worker_q1'] == 2
         update_times = pickle.loads(storage.get(settings.REDIS_UPDATE_TIMES))
         assert update_times['rectify']['q1'] == old_time
+
+
+def test_monitor_common_config(env):
+    storage = RedisStorageMock()
+    infrastructure_provider = InfrastructureProviderMock(env)
+
+    storage.set(
+        settings.REDIS_CONFIG_KEY,
+        b'{"rectifier":{"q1+q2":{"intervals":[0,10,100],"workers":[0,2,3],"cooldown":60,"consumers_formation_name":"worker"}}}',
+    )
+
+    rectifier = Rectifier(
+        broker=RabbitMQ(),
+        storage=storage,
+        infrastructure_provider=infrastructure_provider,
+    )
+
+    with freeze_time("2012-01-14 03:00:00") as frozen_time:
+        env.rabbitmq.set_queue('rectifier', 'q1', 0, 0)
+        env.rabbitmq.set_queue('rectifier', 'q2', 0, 0)
+        rectifier.run()
+
+        assert infrastructure_provider.called_count == 0
+        assert infrastructure_provider.consumers['rectifier']['worker'] == 0
+
+        env.rabbitmq.set_queue('rectifier', 'q1', 0, 0)
+        env.rabbitmq.set_queue('rectifier', 'q2', 0, 20)
+        rectifier.run()
+
+        assert infrastructure_provider.called_count == 1
+        assert infrastructure_provider.consumers['rectifier']['worker'] == 2
+
+        frozen_time.move_to('2012-01-14 03:20:00')
+        env.rabbitmq.set_queue('rectifier', 'q1', 2, 79)
+        env.rabbitmq.set_queue('rectifier', 'q2', 2, 20)
+        rectifier.run()
+        assert infrastructure_provider.called_count == 1
+        assert infrastructure_provider.consumers['rectifier']['worker'] == 2
+
+        env.rabbitmq.set_queue('rectifier', 'q1', 2, 80)
+        env.rabbitmq.set_queue('rectifier', 'q2', 2, 20)
+        rectifier.run()
+        assert infrastructure_provider.called_count == 2
+        assert infrastructure_provider.consumers['rectifier']['worker'] == 3

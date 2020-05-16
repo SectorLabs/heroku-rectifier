@@ -27,6 +27,16 @@ from .env import env  # noqa
             ['rectifier'],
             [Queue(queue_name='rectifier', consumers_count=1, messages=10)],
         ),
+        (
+            [('app', 'rectifier', 2, 10), ('app', 'rectifier2', 2, 30)],
+            [' rectifier   + rectifier2'],
+            [Queue(queue_name='rectifier+rectifier2', consumers_count=2, messages=40)],
+        ),
+        (
+            [('app', 'rectifier', 2, 10), ('app', 'rectifier2', 3, 30)],
+            [' rectifier   + rectifier2'],
+            [],
+        ),
     ],
 )
 def test_get_current_load(config, interest_queues, output, env):
