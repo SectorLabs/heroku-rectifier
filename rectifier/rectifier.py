@@ -91,7 +91,10 @@ class Rectifier:
 
             updates = dict()
             for queue in queues:
-                new_consumer_count, consumer_formation = self.consumer_updates_coordinator.compute_consumers_count(
+                (
+                    new_consumer_count,
+                    consumer_formation,
+                ) = self.consumer_updates_coordinator.compute_consumers_count(
                     app, app_config.mode, queue
                 )
 

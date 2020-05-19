@@ -66,6 +66,7 @@ class ConsumerUpdatesCoordinator:
         Computes the count of the consumers which should be used for a queue, given its stats and the configuration.
 
         :param app: The app in which the queue resides.
+        :param app_mode: The mode in which the current app is set to run
         :param queue: The queue for which the consumers count should be calculated.
         :return:
             None
