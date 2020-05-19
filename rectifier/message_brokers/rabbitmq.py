@@ -87,28 +87,83 @@ class RabbitMQ(Broker):
 
         return data
 
-    @staticmethod
-    def queues(interest_queues: List[str], stats: Dict) -> List[Queue]:
+    @classmethod
+    def queues(cls, interest_queues: List[str], stats: Dict) -> List[Queue]:
+        multiple_queues_config = cls._multiple_queue_configs(interest_queues)
+        single_queue_configs = cls._single_queue_configs(interest_queues)
+
         queues = []
+        for queue_name in single_queue_configs:
+            queue = cls._handle_single_queue_config(stats, queue_name)
+            if queue:
+                queues.append(queue)
 
-        for queue_name in interest_queues:
-            queue_list = list(
-                filter(lambda queue_stats: queue_stats['name'] == queue_name, stats)
-            )
-
-            if len(queue_list) != 1:
-                message = 'Could not find such a queue name'
-                LOGGER.error(message, response=stats, queue_name=queue_name)
-                continue
-
-            queue = queue_list[0]
-
-            queues.append(
-                Queue(
-                    queue_name=queue_name,
-                    consumers_count=queue.get('consumers'),
-                    messages=queue.get('messages'),
-                )
-            )
+        for queue_names in multiple_queues_config:
+            queue = cls._handle_multiple_queues_config(stats, queue_names)
+            if queue:
+                queues.append(queue)
 
         return queues
+
+    @classmethod
+    def _handle_single_queue_config(cls, stats: Dict, queue_name: str):
+        queue_list = cls._filter_stats(stats, [queue_name])
+
+        if len(queue_list) != 1:
+            message = 'Could not find such a queue name'
+            LOGGER.error(message, response=stats, queue_name=queue_name)
+            return
+
+        queue = queue_list[0]
+        return Queue(
+            queue_name=queue_name,
+            consumers_count=queue.get('consumers'),
+            messages=queue.get('messages'),
+        )
+
+    @classmethod
+    def _handle_multiple_queues_config(cls, stats: Dict, raw_queue_names: str):
+        queue_names = list(map(str.strip, raw_queue_names.split('+')))
+        queue_list = cls._filter_stats(stats, queue_names)
+
+        if len(queue_list) != len(queue_names):
+            message = 'Could not find all queues'
+            LOGGER.error(message, response=stats, queue_names=queue_names)
+            return
+
+        expected_consumers_count = queue_list[0].get('consumers')
+        if not all(
+            queue.get('consumers') == expected_consumers_count
+            for queue in queue_list[1:]
+        ):
+            message = 'Missmatching consumers count'
+            LOGGER.error(message, response=stats, queue_names=queue_list)
+            return
+
+        return Queue(
+            queue_name="+".join(queue_names),
+            consumers_count=queue_list[0].get('consumers'),
+            messages=sum(q.get('messages') for q in queue_list),
+        )
+
+    @staticmethod
+    def _single_queue_configs(interest_queues: List[str]) -> List[str]:
+        return [
+            interest_queue
+            for interest_queue in interest_queues
+            if "+" not in interest_queue
+        ]
+
+    @staticmethod
+    def _multiple_queue_configs(interest_queues: List[str]) -> List[str]:
+        return [
+            interest_queue
+            for interest_queue in interest_queues
+            if "+" in interest_queue
+        ]
+
+    @staticmethod
+    def _filter_stats(stats: Dict, queue_names: List[str]):
+        return list(
+            filter(lambda queue_stats: queue_stats['name'] in queue_names, stats)
+        )

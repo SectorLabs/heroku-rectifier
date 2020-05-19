@@ -34,7 +34,13 @@ def test_config_reader_dict_parsing():
                 'workers': [1, 5, 6, 7],
                 'cooldown': 12,
                 'consumers_formation_name': 'q3w',
-            }
+            },
+            'q1+q2': {
+                'intervals': [0, 10, 11, 14],
+                'workers': [1, 5, 6, 10],
+                'cooldown': 24,
+                'consumers_formation_name': 'q1q2w',
+            },
         },
     }
     expected_result = Config(
@@ -61,15 +67,22 @@ def test_config_reader_dict_parsing():
                 ),
                 rectifier2=AppConfig(
                     mode=AppMode.SCALE,
-                    queues=dict(
-                        q3=QueueConfig(
+                    queues={
+                        "q3": QueueConfig(
                             intervals=[0, 10, 11, 12],
                             workers=[1, 5, 6, 7],
                             cooldown=12,
                             queue_name='q3',
                             consumers_formation_name='q3w',
-                        )
-                    ),
+                        ),
+                        "q1+q2": QueueConfig(
+                            intervals=[0, 10, 11, 14],
+                            workers=[1, 5, 6, 10],
+                            cooldown=24,
+                            queue_name='q1+q2',
+                            consumers_formation_name='q1q2w',
+                        ),
+                    },
                 ),
             )
         )
