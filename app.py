@@ -10,9 +10,9 @@ import structlog
 
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_basicauth import BasicAuth
-from healthcheck import HealthCheck
 
 from rectifier.config import ConfigParser, ConfigReadError
+from rectifier.health_checker import HealthChecker
 from rectifier.infrastructure_provider import Heroku
 from rectifier.message_brokers import RabbitMQ
 from rectifier.rectifier import Rectifier
@@ -33,10 +33,8 @@ app.config['BASIC_AUTH_FORCE'] = True
 basic_auth = BasicAuth(app)
 
 storage = RedisStorage()
-
-health = HealthCheck()
-
 config_reader = ConfigParser(storage=storage)
+health_checker = HealthChecker(storage)
 
 
 class RectifierThread(threading.Thread):
@@ -77,18 +75,9 @@ def submit_configuration():
     return redirect(url_for('home'))
 
 
-# add /healthcheck endpoint that checks for redis connection also
-
-def redis_available():
-    info = RedisStorage().redis.info()
-    return True, "redis ok"
-
-
-health.add_section('commit', os.environ.get('HEROKU_SLUG_COMMIT', None))
-health.add_section('release', {"version": os.environ.get('HEROKU_RELEASE_VERSION', None)})
-health.add_check(redis_available)
-
-app.add_url_rule("/healthcheck", "healthcheck", view_func=lambda: health.run())
+@app.route("/hc")
+def health_check():
+    return health_checker.run()
 
 
 class WebThread(threading.Thread):
@@ -112,6 +101,7 @@ threading.excepthook = on_uncaught_exception  # type: ignore
 
 rectifier = RectifierThread()
 rectifier.start()
+
 
 if __name__ == '__main__':
     app.run(host=settings.HOST, port=settings.PORT)
