@@ -12,6 +12,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_basicauth import BasicAuth
 
 from rectifier.config import ConfigParser, ConfigReadError
+from rectifier.health_checker import HealthChecker
 from rectifier.infrastructure_provider import Heroku
 from rectifier.message_brokers import RabbitMQ
 from rectifier.rectifier import Rectifier
@@ -33,6 +34,7 @@ basic_auth = BasicAuth(app)
 
 storage = RedisStorage()
 config_reader = ConfigParser(storage=storage)
+health_checker = HealthChecker(storage)
 
 
 class RectifierThread(threading.Thread):
@@ -71,6 +73,11 @@ def submit_configuration():
         flash(str(error), 'error')
 
     return redirect(url_for('home'))
+
+
+@app.route("/hc")
+def health_check():
+    return health_checker.run()
 
 
 class WebThread(threading.Thread):
