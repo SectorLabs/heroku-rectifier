@@ -28,7 +28,6 @@ app.secret_key = settings.SECRET_KEY
 
 app.config['BASIC_AUTH_USERNAME'] = settings.BASIC_AUTH_USER
 app.config['BASIC_AUTH_PASSWORD'] = settings.BASIC_AUTH_PASSWORD
-app.config['BASIC_AUTH_FORCE'] = True
 
 basic_auth = BasicAuth(app)
 
@@ -48,6 +47,7 @@ class RectifierThread(threading.Thread):
 
 
 @app.route("/")
+@basic_auth.required
 def home():
     return render_template(
         'index.html',
@@ -57,6 +57,7 @@ def home():
 
 
 @app.route('/handle_data', methods=['POST'])
+@basic_auth.required
 def submit_configuration():
     config = request.form['code']
     try:
