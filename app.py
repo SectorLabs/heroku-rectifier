@@ -28,7 +28,6 @@ app.secret_key = settings.SECRET_KEY
 
 app.config['BASIC_AUTH_USERNAME'] = settings.BASIC_AUTH_USER
 app.config['BASIC_AUTH_PASSWORD'] = settings.BASIC_AUTH_PASSWORD
-app.config['BASIC_AUTH_FORCE'] = False
 
 basic_auth = BasicAuth(app)
 
