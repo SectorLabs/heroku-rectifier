@@ -31,6 +31,8 @@ BASIC_AUTH_PASSWORD = env('BASIC_AUTH_PASSWORD', 'guest')
 
 DRY_RUN = env.bool('DRY_RUN', False)
 
+HEALTH_CHECKER_FAILED_STATUS = env('HEALTH_CHECKER_FAILED_STATUS', 503)
+
 timestamper = structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M:%S")
 pre_chain = [
     # Add the log level and a timestamp to the event_dict if the log entry
