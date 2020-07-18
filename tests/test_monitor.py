@@ -1,7 +1,9 @@
 import pytest
 import pickle
+
 from collections import defaultdict
 from typing import Dict
+from unittest.mock import MagicMock
 
 from freezegun import freeze_time
 
@@ -205,6 +207,27 @@ def test_monitor_with_no_config(env):
     assert infrastructure_provider.called_count == 0
     assert not storage.get(settings.REDIS_CONFIG_KEY)
     assert not storage.get(settings.REDIS_UPDATE_TIMES)
+
+
+def test_monitor_with_no_broker_uri(env):
+    storage = RedisStorageMock()
+    infrastructure_provider = MagicMock()
+    infrastructure_provider.scale = MagicMock()
+    infrastructure_provider.broker_uri = MagicMock(return_value=None)
+
+    storage.set(
+        settings.REDIS_CONFIG_KEY,
+        b'{"rectifier":{"q1":{"intervals":[0,10,100],"workers":[1,2,3],"cooldown":60,"consumers_formation_name":"worker_q1"}}}',
+    )
+    rectifier = Rectifier(
+        broker=RabbitMQ(),
+        storage=storage,
+        infrastructure_provider=infrastructure_provider,
+    )
+
+    rectifier.run()
+
+    assert not infrastructure_provider.scale.called
 
 
 def test_update_time_storage(env):
