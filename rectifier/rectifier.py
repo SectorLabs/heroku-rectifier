@@ -81,7 +81,11 @@ class Rectifier:
 
             queues_config = app_config.queues
 
-            broker_uri = self.infrastructure_provider.broker_uri(app)
+            try:
+                broker_uri = self.infrastructure_provider.broker_uri(app)
+            except InfrastructureProviderError:
+                return
+
             if not broker_uri:
                 LOGGER.warning('Cannot find broker URI on app', app=app)
                 continue
