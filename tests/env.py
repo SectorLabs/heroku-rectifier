@@ -1,4 +1,7 @@
 import pytest
+import unittest.mock
+from dataclasses import dataclass
+from pika import URLParameters
 
 from rectifier import settings
 from rectifier.config import Config, CoordinatorConfig, QueueConfig, AppConfig, AppMode
@@ -55,5 +58,11 @@ def env():
     env = TestableEnv()
     env.start()
     settings.RABBIT_MQ_SECURE = False
-    yield env
+
+    with unittest.mock.patch(
+        'pika.URLParameters.host', new_callable=unittest.mock.PropertyMock
+    ) as p:
+        p.return_value = f'127.0.0.1:{env.rabbitmq.port}'
+        yield env
+
     env.stop()

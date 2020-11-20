@@ -35,8 +35,6 @@ class RabbitMQ(Broker):
         url_params = pika.URLParameters(uri)
 
         host = url_params.host
-        if url_params.port and url_params.port != url_params.DEFAULT_PORT:
-            host = '%s:%s' % (host, url_params.port)
         user = url_params.credentials.username
         password = url_params.credentials.password
         vhost = url_params.virtual_host
