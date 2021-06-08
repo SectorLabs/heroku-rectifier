@@ -2,6 +2,7 @@ from typing import Dict
 
 import structlog
 import heroku3
+from heroku3.api import ResponseError, RateLimitExceeded
 
 from heroku3.models.app import App as HerokuApp
 from requests import HTTPError
@@ -37,9 +38,13 @@ class Heroku(InfrastructureProvider):
         try:
             app = self._connection(app_name)
             app.batch_scale_formation_processes(scale_requests)
-        except HTTPError as e:
+        except (HTTPError, ResponseError) as e:
             message = 'Failed to scale.'
-            LOGGER.error(message, error=e)
+            LOGGER.error(message, app=app_name, error=e)
+            raise InfrastructureProviderError(message)
+        except RateLimitExceeded as e:
+            message = 'Rate limit exceeded.'
+            LOGGER.error(message, app=app_name, error=e)
             raise InfrastructureProviderError(message)
 
     def broker_uri(self, app_name: str):
@@ -52,7 +57,11 @@ class Heroku(InfrastructureProvider):
             return app.config()[settings.BROKER_URL_KEY]
         except HTTPError as e:
             message = 'Cannot retrieve the broker uri.'
-            LOGGER.error(message, error=e)
+            LOGGER.error(message, app=app_name, error=e)
+            raise InfrastructureProviderError(message)
+        except RateLimitExceeded as e:
+            message = 'Rate limit exceeded.'
+            LOGGER.error(message, app=app_name, error=e)
             raise InfrastructureProviderError(message)
 
     @staticmethod
