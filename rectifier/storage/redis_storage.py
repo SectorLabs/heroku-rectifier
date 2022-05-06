@@ -24,7 +24,7 @@ class RedisStorage(Storage):
         self.redis = redis.StrictRedis.from_url(settings.REDIS_URL)
 
     def set(self, key: str, value: Any) -> None:
-        self.redis.set(key, value)
+        return self.redis.set(key, value)
 
     def get(self, key: str) -> Any:
         return self.redis.get(key)
@@ -35,4 +35,4 @@ class RedisStorage(Storage):
         return RedisSubscription(pubsub)
 
     def publish(self, channel: str, message: Optional[Any] = None):
-        return self.redis.publish(channel, message)  # type: ignore
+        return self.redis.publish(channel, message)
