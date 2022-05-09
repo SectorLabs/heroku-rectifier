@@ -94,9 +94,7 @@ class Rectifier:
                 stats = self.broker.stats(broker_uri)
                 queues = self.broker.queues(queues_config.keys(), stats)
             except BrokerError as err:
-                LOGGER.warning(
-                    'Skipping broker', app=app, broker_uri=broker_uri, err=err
-                )
+                LOGGER.warning('Skipping broker', app=app, broker_uri=broker_uri, err=err)
                 continue
 
             updates = dict()
