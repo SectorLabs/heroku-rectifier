@@ -11,9 +11,9 @@ from rectifier.infrastructure_provider import (
     InfrastructureProvider,
     InfrastructureProviderError,
 )
-
 from rectifier import settings
 from rectifier.get_random_key import get_random_key
+from rectifier.obfuscate_string import obfuscate_string
 
 LOGGER = structlog.get_logger(__name__)
 
@@ -35,16 +35,18 @@ class Heroku(InfrastructureProvider):
             LOGGER.debug('Not pursuing scaling since this is a dry run')
             return
 
+        key = self._key()
+
         try:
-            app = self._connection(app_name)
+            app = self._connection(app_name, key)
             app.batch_scale_formation_processes(scale_requests)
         except (HTTPError, ResponseError) as e:
             message = 'Failed to scale.'
-            LOGGER.error(message, app=app_name, error=e)
+            LOGGER.error(message, app=app_name, error=e, key=obfuscate_string(key))
             raise InfrastructureProviderError(message)
         except RateLimitExceeded as e:
             message = 'Rate limit exceeded.'
-            LOGGER.error(message, app=app_name, error=e)
+            LOGGER.error(message, app=app_name, error=e, key=obfuscate_string(key))
             raise InfrastructureProviderError(message)
 
     def broker_uri(self, app_name: str):
@@ -52,28 +54,36 @@ class Heroku(InfrastructureProvider):
         Retrieves the broker URI for a given app_name
         """
 
+        key = self._key()
+
         try:
-            app = self._connection(app_name)
+            app = self._connection(app_name, key)
             return app.config()[settings.BROKER_URL_KEY]
         except HTTPError as e:
             message = 'Cannot retrieve the broker uri.'
-            LOGGER.error(message, app=app_name, error=e)
+            LOGGER.error(message, app=app_name, error=e, key=obfuscate_string(key))
             raise InfrastructureProviderError(message)
         except RateLimitExceeded as e:
             message = 'Rate limit exceeded.'
-            LOGGER.error(message, app=app_name, error=e)
+            LOGGER.error(message, app=app_name, error=e, key=obfuscate_string(key))
             raise InfrastructureProviderError(message)
 
     @staticmethod
-    def _connection(app_name: str) -> HerokuApp:
-        """Gets a connection to Heroku."""
+    def _key() -> str:
         key = get_random_key(settings.HEROKU_API_KEYS)
+
         if not key:
             message = 'No API key set'
             LOGGER.error('No API key set')
             raise InfrastructureProviderError(message)
 
-        conn = heroku3.from_key(get_random_key(settings.HEROKU_API_KEYS))
+        return key
+
+    @staticmethod
+    def _connection(app_name: str, api_key: str) -> HerokuApp:
+        """Gets a connection to Heroku."""
+
+        conn = heroku3.from_key(api_key)
         apps = conn.apps()
 
         if app_name not in apps:
