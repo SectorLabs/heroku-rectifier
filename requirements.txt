@@ -4,7 +4,6 @@ atomicwrites==1.2.1
 attrs==18.2.0
 certifi==2018.8.24
 chardet==3.0.4
-Click==7.0
 colorama==0.4.3
 coverage==4.5.1
 environ==1.0
@@ -23,7 +22,6 @@ jsonschema==3.2.0
 MarkupSafe==1.1.1
 marshmallow==3.5.0
 more-itertools==4.3.0
-pathspec==0.8.0
 pika==0.12.0
 pluggy==0.7.1
 py==1.6.0
@@ -45,3 +43,8 @@ tzlocal==1.5.1
 urllib3==1.24.2
 Werkzeug==1.0.0
 zipp==3.1.0
+black==22.3.0
+mypy==0.950
+types-redis
+types-requests
+types-freezegun
