@@ -64,7 +64,7 @@ def submit_configuration():
         ConfigParser.validate(json.loads(config))
 
         storage.set(settings.REDIS_CONFIG_KEY, config)
-        storage.publish(settings.REDIS_CHANNEL, None)
+        storage.publish(settings.REDIS_CHANNEL, json.dumps(None))
 
         global config_reader
         config_reader = ConfigParser(storage=storage)
