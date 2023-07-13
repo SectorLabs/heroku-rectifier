@@ -84,11 +84,12 @@ class Heroku(InfrastructureProvider):
         """Gets a connection to Heroku."""
 
         conn = heroku3.from_key(api_key)
-        apps = conn.apps()
+        try:
+            return conn.app(app_name)
+        except HTTPError as e:
+            if e.response.status_code in (403, 404):
+                message = 'App could not be found on Heroku'
+                LOGGER.error(message, app=app_name)
+                raise InfrastructureProviderError(message) from e
 
-        if app_name not in apps:
-            message = 'App could not be found on Heroku'
-            LOGGER.error(message, app=app_name, apps=apps)
-            raise InfrastructureProviderError(message)
-
-        return apps[app_name]
+            raise e
