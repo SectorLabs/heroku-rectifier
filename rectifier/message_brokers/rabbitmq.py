@@ -136,7 +136,7 @@ class RabbitMQ(Broker):
 
             if consumer_count != expected_consumers_count:
                 LOGGER.error(
-                    "Missmatching consumer count",
+                    "Mismatching consumer count",
                     queue_name=queue_name,
                     count=[consumer_count, expected_consumers_count],
                 )
