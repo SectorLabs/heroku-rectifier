@@ -29,7 +29,8 @@ class Heroku(InfrastructureProvider):
         :param scale_requests: What consumers to scale
         """
 
-        LOGGER.info(f"[{app_name}] Scaling: {scale_requests}")
+        message = "Scaling" if not settings.DRY_RUN else "Pretending to scale"
+        LOGGER.info(f"[{app_name}] {message}: {scale_requests}")
 
         if settings.DRY_RUN:
             LOGGER.debug('Not pursuing scaling since this is a dry run')
