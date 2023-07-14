@@ -41,7 +41,6 @@ class ConfigParser:
 
         self.raw_config = config_dict
         self.config = ConfigParser.from_dict(config_dict) if config_dict else None
-        LOGGER.info('Using configuration:', config=self.config)
 
     @classmethod
     def from_dict(cls, data: Dict) -> Config:
