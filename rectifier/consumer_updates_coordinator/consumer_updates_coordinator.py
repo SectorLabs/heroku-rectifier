@@ -85,6 +85,8 @@ class ConsumerUpdatesCoordinator:
             if time_since_update.seconds < queue_config.cooldown:
                 LOGGER.info(
                     "Not updating the queues yet.",
+                    app=app,
+                    queue_name=queue.queue_name,
                     last_update=last_update.isoformat(),
                     cooldown=queue_config.cooldown,
                     timedelta=time_since_update.seconds,
