@@ -130,13 +130,17 @@ class RabbitMQ(Broker):
             return
 
         expected_consumers_count = queue_list[0].get('consumers')
-        if not all(
-            queue.get('consumers') == expected_consumers_count
-            for queue in queue_list[1:]
-        ):
-            message = 'Missmatching consumers count'
-            LOGGER.error(message, response=stats, queue_names=queue_list)
-            return
+        for idx, queue in enumerate(queue_list[1:]):
+            consumer_count = queue.get('consumers')
+            queue_name = queue_names[idx + 1]
+
+            if consumer_count != expected_consumers_count:
+                LOGGER.error(
+                    "Missmatching consumer count",
+                    queue_name=queue_name,
+                    count=[consumer_count, expected_consumers_count],
+                )
+                return
 
         return Queue(
             queue_name="+".join(queue_names),
