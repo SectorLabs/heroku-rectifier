@@ -115,8 +115,8 @@ class RabbitMQ(Broker):
         queue = queue_list[0]
         return Queue(
             queue_name=queue_name,
-            consumers_count=queue.get('consumers'),
-            messages=queue.get('messages'),
+            consumers_count=queue.get('consumers') or 0,
+            messages=queue.get('messages') or 0,
         )
 
     @classmethod
@@ -129,9 +129,9 @@ class RabbitMQ(Broker):
             LOGGER.error(message, response=stats, queue_names=queue_names)
             return
 
-        expected_consumers_count = queue_list[0].get('consumers')
+        expected_consumers_count = queue_list[0].get('consumers') or 0
         for idx, queue in enumerate(queue_list[1:]):
-            consumer_count = queue.get('consumers')
+            consumer_count = queue.get('consumers') or 0
             queue_name = queue_names[idx + 1]
 
             if consumer_count != expected_consumers_count:
@@ -144,8 +144,8 @@ class RabbitMQ(Broker):
 
         return Queue(
             queue_name="+".join(queue_names),
-            consumers_count=queue_list[0].get('consumers'),
-            messages=sum(q.get('messages') for q in queue_list),
+            consumers_count=queue_list[0].get('consumers') or 0,
+            messages=sum((q.get('messages') or 0) for q in queue_list),
         )
 
     @staticmethod
