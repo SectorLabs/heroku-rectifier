@@ -109,7 +109,7 @@ class RabbitMQ(Broker):
 
         if len(queue_list) != 1:
             message = 'Could not find such a queue name'
-            LOGGER.error(message, response=stats, queue_name=queue_name)
+            LOGGER.error(message, queue_name=queue_name)
             return
 
         queue = queue_list[0]
@@ -126,7 +126,7 @@ class RabbitMQ(Broker):
 
         if len(queue_list) != len(queue_names):
             message = 'Could not find all queues'
-            LOGGER.error(message, response=stats, queue_names=queue_names)
+            LOGGER.error(message, queue_names=queue_names)
             return
 
         expected_consumers_count = queue_list[0].get('consumers') or 0
