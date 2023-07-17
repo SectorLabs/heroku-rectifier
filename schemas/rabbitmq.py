@@ -4,9 +4,9 @@ class RabbitMQ:
         'properties': {
             'name': {'type': 'string'},
             'messages': {'type': 'integer'},
-            'consumers': {'type': 'integer'},
+            'consumers': {'type': 'integer'}
         },
-        'required': ['name', 'messages', 'consumers'],
+        'required': ['name'],
     }
 
     SCHEMA = {'type': 'array', 'items': QUEUE}

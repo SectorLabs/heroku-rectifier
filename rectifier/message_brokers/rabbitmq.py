@@ -109,14 +109,14 @@ class RabbitMQ(Broker):
 
         if len(queue_list) != 1:
             message = 'Could not find such a queue name'
-            LOGGER.error(message, response=stats, queue_name=queue_name)
+            LOGGER.error(message, queue_name=queue_name)
             return
 
         queue = queue_list[0]
         return Queue(
             queue_name=queue_name,
-            consumers_count=queue.get('consumers'),
-            messages=queue.get('messages'),
+            consumers_count=queue.get('consumers') or 0,
+            messages=queue.get('messages') or 0,
         )
 
     @classmethod
@@ -126,22 +126,26 @@ class RabbitMQ(Broker):
 
         if len(queue_list) != len(queue_names):
             message = 'Could not find all queues'
-            LOGGER.error(message, response=stats, queue_names=queue_names)
+            LOGGER.error(message, queue_names=queue_names)
             return
 
-        expected_consumers_count = queue_list[0].get('consumers')
-        if not all(
-            queue.get('consumers') == expected_consumers_count
-            for queue in queue_list[1:]
-        ):
-            message = 'Missmatching consumers count'
-            LOGGER.error(message, response=stats, queue_names=queue_list)
-            return
+        expected_consumers_count = queue_list[0].get('consumers') or 0
+        for idx, queue in enumerate(queue_list[1:]):
+            consumer_count = queue.get('consumers') or 0
+            queue_name = queue_names[idx + 1]
+
+            if consumer_count != expected_consumers_count:
+                LOGGER.error(
+                    "Mismatching consumer count",
+                    queue_name=queue_name,
+                    count=[consumer_count, expected_consumers_count],
+                )
+                return
 
         return Queue(
             queue_name="+".join(queue_names),
-            consumers_count=queue_list[0].get('consumers'),
-            messages=sum(q.get('messages') for q in queue_list),
+            consumers_count=queue_list[0].get('consumers') or 0,
+            messages=sum((q.get('messages') or 0) for q in queue_list),
         )
 
     @staticmethod

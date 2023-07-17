@@ -29,7 +29,8 @@ class Heroku(InfrastructureProvider):
         :param scale_requests: What consumers to scale
         """
 
-        LOGGER.info(f"[{app_name}] Scaling: {scale_requests}")
+        message = "Scaling" if not settings.DRY_RUN else "Pretending to scale"
+        LOGGER.info(f"[{app_name}] {message}: {scale_requests}")
 
         if settings.DRY_RUN:
             LOGGER.debug('Not pursuing scaling since this is a dry run')
@@ -84,11 +85,12 @@ class Heroku(InfrastructureProvider):
         """Gets a connection to Heroku."""
 
         conn = heroku3.from_key(api_key)
-        apps = conn.apps()
+        try:
+            return conn.app(app_name)
+        except HTTPError as e:
+            if e.response.status_code in (403, 404):
+                message = 'App could not be found on Heroku'
+                LOGGER.error(message, app=app_name)
+                raise InfrastructureProviderError(message) from e
 
-        if app_name not in apps:
-            message = 'App could not be found on Heroku'
-            LOGGER.error(message, app=app_name, apps=apps)
-            raise InfrastructureProviderError(message)
-
-        return apps[app_name]
+            raise e
