@@ -11,7 +11,7 @@ REDIS_UPDATE_TIMES = 'update_times'
 
 BROKER_URL_KEY = 'CLOUDAMQP_URL'
 
-REDIS_URL = env('REDIS_TEMPORARY_URL', 'redis://127.0.0.1:6379/0')
+REDIS_URL = env('REDIS_URL', 'redis://127.0.0.1:6379/0')
 
 RABBIT_MQ_SECURE = env.bool('RABBIT_MQ_SECURE', False)
 
