@@ -21,7 +21,14 @@ class RedisStorage(Storage):
     """
 
     def __init__(self) -> None:
-        self.redis = redis.StrictRedis.from_url(settings.REDIS_URL)
+        self.redis = self.__redis_instance()
+
+    @staticmethod
+    def __redis_instance():
+        if settings.REDIS_URL.startswith('rediss'):
+            return redis.StrictRedis.from_url(settings.REDIS_URL, ssl_cert_reqs=None)
+
+        return redis.StrictRedis.from_url(settings.REDIS_URL)
 
     def set(self, key: str, value: Any) -> None:
         self.redis.set(key, value)
